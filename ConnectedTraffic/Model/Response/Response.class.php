@@ -2,13 +2,18 @@
 
 namespace ConnectedTraffic\Model\Response;
 
-class Response{
+class Response {
 	private $receiver = null;
 	private $header = null;
 	private $body = null;
 	private $serializer = null;
 	
-	public function __construct($receiver, $body=null, $status = 0, $statusMessage = 'OK'){
+	public function __construct(
+		$receiver,
+		$body = null,
+		$status = 0,
+		$statusMessage = 'OK'
+	) {
 		$this->receiver = $receiver;
 		$this->header = new ResponseHeader(sha1(uniqid() . time()), strlen($body), $status, $statusMessage);
 		$this->body = $body;
@@ -17,20 +22,19 @@ class Response{
 		$this->serializer->serialize();
 	}
 	
-	public function getHeader(){
+	public function getHeader() {
 		return $this->header;
 	}
 	
-	public function getBody(){
+	public function getBody() {
 		return $this->body;
 	}
 	
-	public function getReceiver(){
+	public function getReceiver() {
 		return $this->receiver;
 	}
 	
-	public function getRawData(){
+	public function getRawData() {
 		return $this->serializer->getRawData();
 	}
 }
-?>

@@ -2,24 +2,23 @@
 
 namespace ConnectedTraffic\Model\Frame;
 
-class OutboundFrame extends \ConnectedTraffic\Model\Frame\Frame{
+class OutboundFrame extends \ConnectedTraffic\Model\Frame\Frame {
 	private $receiver = null;
 
-	public function __construct($receiver, $payload = null){
+	public function __construct($receiver, $payload = null) {
 		$this->receiver = $receiver;
 		$this->payload = $payload;
 	}
 
-	public function getReceiver(){
+	public function getReceiver() {
 		return $this->receiver;
 	}
 
-	public function getData(){
-		if($this->isHandshake())
+	public function getData() {
+		if ($this->isHandshake()) {
 			return $this->payload;
-		else
+		} else {
 			return $this->encapsulate();
+		}
 	}
 }
-
-?>

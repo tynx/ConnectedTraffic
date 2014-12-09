@@ -2,8 +2,4 @@
 
 namespace ConnectedTraffic\Exception;
 
-class InvalidConfigException extends \Exception{
-
-}
-
-?>
+class InvalidConfigException extends \Exception { }

@@ -2,24 +2,21 @@
 
 namespace ConnectedTraffic\Model\Frame;
 
-class InboundFrame extends \ConnectedTraffic\Model\Frame\Frame{
+class InboundFrame extends \ConnectedTraffic\Model\Frame\Frame {
 	private $sender = null;
 	private $unparsedPayload = null;
 
-	public function __construct($sender, $rawData){
+	public function __construct($sender, $rawData) {
 		$this->sender = $sender;
 		$this->unparsedPayload = $rawData;
 		$this->parse($rawData);
 	}
 
-	public function getSender(){
+	public function getSender() {
 		return $this->sender;
 	}
 
-	public function getUnparsedPayload(){
+	public function getUnparsedPayload() {
 		return $this->unparsedPayload;
 	}
-
 }
-
-?>

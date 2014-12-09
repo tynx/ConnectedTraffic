@@ -5,7 +5,7 @@ namespace ConnectedTraffic\Model\Frame;
 use \ConnectedTraffic\Helper\Masking as Masking;
 
 // a websocket-frame
-abstract class Frame{
+abstract class Frame {
 
 	const OPCODE_CONTINUATION = 0;
 	const OPCODE_TEXT = 1;
@@ -15,42 +15,39 @@ abstract class Frame{
 	const OPCODE_PONG = 10;
 
 	protected $header = array(
-		'fin'=>true,
-		'rsv1'=>false,
-		'rsv2'=>false,
-		'rsv3'=>false,
-		'opcode'=>0,
-		'masked'=>false,
-		'length'=>0,
+		'fin'    => true,
+		'rsv1'   => false,
+		'rsv2'   => false,
+		'rsv3'   => false,
+		'opcode' => 0,
+		'masked' => false,
+		'length' => 0,
 	);
 
 	protected $payload = null;
 	protected $isHandshake = false;
 
-	public function __construct(){
-	}
-
-	public function setIsHandshake(){
+	public function setIsHandshake() {
 		$this->isHandshake = true;
 	}
 
-	public function isHandshake(){
+	public function isHandshake() {
 		return $this->isHandshake;
 	}
 
-	public function getOpcode(){
+	public function getOpcode() {
 		return $this->header['opcode'];
 	}
 
-	public function setOpcode($opcode){
+	public function setOpcode($opcode) {
 		$this->header['opcode'] = $opcode;
 	}
 
-	public function getPayload(){
+	public function getPayload() {
 		return $this->payload;
 	}
 
-	protected function parse($rawData){
+	protected function parse($rawData) {
 		$bits = decbin(ord($rawData[0])) . decbin(ord($rawData[1]));
 
 		$this->header['fin'] = ($bits[0] === '1') ? true : false;
@@ -63,7 +60,7 @@ abstract class Frame{
 
 		$rawData = substr($rawData, 2);
 
-		if($this->header['length'] == 127){
+		if ($this->header['length'] === 127) {
 			$bits = decbin(ord($rawData[0])) . decbin(ord($rawData[1])) .
 			decbin(ord($rawData[2])) . decbin(ord($rawData[3])) .
 			decbin(ord($rawData[4])) . decbin(ord($rawData[5])) .
@@ -72,13 +69,13 @@ abstract class Frame{
 			$rawData = substr($rawData, 8);
 		}
 
-		if($this->header['length'] == 126){
+		if ($this->header['length'] === 126) {
 			$this->header['length'] = bindec(decbin(ord($rawData[0])) . decbin(ord($rawData[1])));
 			$rawData = substr($rawData, 2);
 		}
 
 		
-		if($this->header['masked'] === true){
+		if ($this->header['masked'] === true) {
 			$masking = new Masking(array(
 				$rawData[0], $rawData[1], $rawData[2], $rawData[3]
 			));
@@ -88,29 +85,29 @@ abstract class Frame{
 		$this->payload = $rawData;
 	}
 
-	protected function encapsulate(){
-		$raw_data = '';
+	protected function encapsulate() {
+		$rawData = '';
 		$bits = (($this->header['fin'] === true) ? '1' : '0') . '000';
 
 		$bits .= str_pad(decbin($this->getOpcode()), 4, '0', STR_PAD_LEFT) . '0';
-		$length_bits = decbin(strlen($this->payload));
+		$lengthBits = decbin(strlen($this->payload));
 
-		if(strlen($this->payload) >= 65535)
-			$bits .= '1111111' . str_pad($length_bits, 64, '0', STR_PAD_LEFT);
-		elseif(strlen($this->payload) >= 126 )
-			$bits .= '1111110' . str_pad($length_bits, 16, '0', STR_PAD_LEFT);
-		else
-			$bits .= str_pad($length_bits, 7, '0', STR_PAD_LEFT);
+		if (strlen($this->payload) >= 65535) {
+			$bits .= '1111111' . str_pad($lengthBits, 64, '0', STR_PAD_LEFT);
+		} elseif (strlen($this->payload) >= 126) {
+			$bits .= '1111110' . str_pad($lengthBits, 16, '0', STR_PAD_LEFT);
+		} else {
+			$bits .= str_pad($lengthBits, 7, '0', STR_PAD_LEFT);
+		}
 
-		$rawData = '';
-		for($i=0; $i<(strlen($bits)/8); $i++)
-			$rawData .= chr(bindec(substr($bits, $i*8, 8)));
+		for ($i = 0; $i < (strlen($bits) / 8); $i++) {
+			$rawData .= chr(bindec(substr($bits, $i * 8, 8)));
+		}
 
-		for($i=0; $i<strlen($this->payload); $i++)
+		for ($i = 0; $i < strlen($this->payload); $i++) {
 			$rawData .= utf8_decode($this->payload[$i]);
+		}
 
 		return $rawData;
 	}
 }
-
-?>

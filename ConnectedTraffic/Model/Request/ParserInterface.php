@@ -2,12 +2,10 @@
 
 namespace ConnectedTraffic\Model\Request;
 
-Interface ParserInterface{
+Interface ParserInterface {
 	public function __construct($rawData);
 	public function parse();
 	public function getHeader();
 	public function getBody();
 	public function getErrorMessage();
 }
-
-?>
