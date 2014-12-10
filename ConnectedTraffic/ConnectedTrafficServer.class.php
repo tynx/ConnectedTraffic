@@ -24,9 +24,8 @@ namespace ConnectedTraffic;
 use \ConnectedTraffic as ConnectedTraffic;
 use \ConnectedTraffic\Controller\ConnectionController
 	as ConnectionController;
-use \ConnectedTraffic\Model\Frame\Frame as Frame;
-use \ConnectedTraffic\Model\Frame\InboundFrame as InboundFrame;
-use \ConnectedTraffic\Model\Frame\OutboundFrame as OutboundFrame;
+use \ConnectedTraffic\Model\ConnectionManager as ConnectionManager;
+
 
 class ConnectedTrafficServer {
 
@@ -39,6 +38,7 @@ class ConnectedTrafficServer {
 
 	// constructor binds to the port/address
 	public function __construct() {
+		$this->connectionManager = new ConnectionManager();
 		$this->config = ConnectedTraffic::getConfig('server');
 		$this->controller = new ConnectionController();
 		$msg = 'Starting Server (PID: ' . posix_getpid() . ')';
@@ -59,12 +59,9 @@ class ConnectedTrafficServer {
 	private function _runCycle(){
 		$write = null;
 		$except = null;
-		$sockets = $this->controller->getCM()->getConnectedSockets();
+		$sockets = ConnectedTraffic::getCM()->getConnectedSockets();
 		$sockets[] = $this->masterSocket;
 		$changes = socket_select($sockets, $write, $except, 1);
-		if ($changes === 0) {
-			return;
-		}
 		foreach ($sockets as $socket) {
 			if ($socket === $this->masterSocket) {
 				$newSocket = socket_accept($this->masterSocket);
@@ -73,9 +70,9 @@ class ConnectedTrafficServer {
 				} else {
 					$this->controller->registerOpen($newSocket);
 				}
-				continue;
+			} else {
+				$this->controller->registerInput($socket);
 			}
-			$this->controller->registerInput($socket);
 		}
 	}
 
@@ -89,7 +86,7 @@ class ConnectedTrafficServer {
 	}
 
 	private function getActiveSockets() {
-		$sockets = $this->controller->getCM()->getConnectedSockets();
+		$sockets = ConnectedTraffic::getCM()->getConnectedSockets();
 		$sockets[] = $this->masterSocket;
 		return $sockets;
 	}

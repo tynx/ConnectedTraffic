@@ -20,6 +20,8 @@
 namespace ConnectedTraffic\Controller\Frame;
 
 use \ConnectedTraffic as ConnectedTraffic;
+use \ConnectedTraffic\Model\Frame\OutboundFrame as OutboundFrame;
+use \ConnectedTraffic\Model\Request\Request as Request;
 
 class TextFrameController 
 	extends \ConnectedTraffic\Controller\Frame\FrameController {
@@ -29,5 +31,15 @@ class TextFrameController
 			'Got textframe => controller',
 			'ConnectedTraffic.Controller.Frame.TextFrameController'
 		);
+		$r = new Request($inFrame->getSender(), $inFrame->getPayload());
+		ConnectedTraffic::app()->processRequest($inFrame->getSender(), $r);
+		
+		$response = ConnectedTraffic::app()->getResponse();
+		while ($response !== null) {
+			$outFrame = new OutboundFrame($response->getReceiver(), $response->getRawData());
+			$outFrame->setOpcode(OutboundFrame::OPCODE_TEXT);
+			$this->addOutboundFrame($outFrame);
+			$response = ConnectedTraffic::app()->getResponse();
+		}
 	}
 }

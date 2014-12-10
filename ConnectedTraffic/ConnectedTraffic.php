@@ -30,20 +30,45 @@ if (!defined('SERVER_IP')) {
 }
 
 use \ConnectedTraffic\ConnectedTrafficServer as ConnectedTrafficServer;
+use \ConnectedTraffic\ConnectedTrafficApp as ConnectedTrafficApp;
+use \ConnectedTraffic\Model\ConnectionManager as ConnectionManager;
 use \ConnectedTraffic\Component\Logging\Logger as Logger;
 
 class ConnectedTraffic {
 	private static $config = null;
+	private static $connectionManager = null;
 	private static $logger = null;
 	private static $server = null;
+	private static $app = null;
 
-	public static function createServer($config) {
+	public static function init($config){
+		self::$connectionManager = new ConnectionManager();
 		self::$config = $config;
 		if (isset($config['components']['logging'])) {
 			self::$logger = new Logger($config['components']['logging']);
 		}
+		self::_createApp();
+		self::_createServer();
+	}
+
+	private static function _createApp() {
+		self::$app = new ConnectedTrafficApp();
+	}
+
+	private static function _createServer() {
 		self::$server = new ConnectedTrafficServer();
+	}
+
+	public static function app(){
+		return self::$app;
+	}
+
+	public static function server(){
 		return self::$server;
+	}
+
+	public static function getCM(){
+		return self::$connectionManager;
 	}
 
 	public static function log(
@@ -64,4 +89,6 @@ class ConnectedTraffic {
 		}
 		return null;
 	}
+
+
 }

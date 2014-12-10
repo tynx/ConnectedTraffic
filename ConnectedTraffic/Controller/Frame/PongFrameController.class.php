@@ -20,6 +20,7 @@
 namespace ConnectedTraffic\Controller\Frame;
 
 use \ConnectedTraffic as ConnectedTraffic;
+use \ConnectedTraffic\Model\Frame\OutboundFrame as OutboundFrame;
 
 class PongFrameController 
 	extends \ConnectedTraffic\Controller\Frame\FrameController {

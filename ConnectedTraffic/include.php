@@ -19,6 +19,7 @@
 
 // Base
 require_once('ConnectedTrafficServer.class.php');
+require_once('ConnectedTrafficApp.class.php');
 
 //Component
 //require_once('Component/Config.class.php');

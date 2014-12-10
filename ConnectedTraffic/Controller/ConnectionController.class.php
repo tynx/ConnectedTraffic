@@ -22,7 +22,6 @@ namespace ConnectedTraffic\Controller;
 use \ConnectedTraffic as ConnectedTraffic;
 use \ConnectedTraffic\Controller\RequestController as RequestController;
 use \ConnectedTraffic\Helper\Handshake as Handshake;
-use \ConnectedTraffic\Model\ConnectionManager as ConnectionManager;
 use \ConnectedTraffic\Model\Frame\InboundFrame as InboundFrame;
 use \ConnectedTraffic\Model\Frame\OutboundFrame as OutboundFrame;
 
@@ -42,13 +41,11 @@ class ConnectionController {
 	private $config = null;
 	private $inboundFrames = array();
 	private $outboundFrames = array();
-	private $cm = null;
 	private $requestController = null;
 	
 
 	public function __construct() {
 		$this->config = ConnectedTraffic::getConfig('server');
-		$this->cm = new ConnectionManager();
 		//$this->requestController = new RequestController();
 	}
 
@@ -57,13 +54,14 @@ class ConnectionController {
 			'registering new input.',
 			'ConnectedTraffic.Controller.ConnectionController'
 		);
-		$connection = $this->cm->getConnectionBySocket($socket);
+		$connection = ConnectedTraffic::getCM()->getConnectionBySocket($socket);
 		if ($connection === null) {
 			throw new InvalidConnectionException(
 				'Given socket was not found in ConnectionController'
 			);
 		}
 		$msg = $connection->read();
+		ConnectedTraffic::app()->onMessage($connection->getId(), $msg);
 		if ($msg === null) {
 			ConnectedTraffic::log(
 				'Got empty input. Closing connection.', 
@@ -105,7 +103,7 @@ class ConnectionController {
 	}
 
 	private function _processInboundFrame($inFrame) {
-		$connection = $this->cm->getConnectionById($inFrame->getSender());
+		$connection = ConnectedTraffic::getCM()->getConnectionById($inFrame->getSender());
 		if (!$connection->hasHandshaked()) {
 			$connection->setHasHandshaked();
 			$outFrame = new OutboundFrame(
@@ -114,6 +112,7 @@ class ConnectionController {
 			);
 			$outFrame->setIsHandshake();
 			$this->registerOutput($outFrame);
+			ConnectedTraffic::app()->onInitialized($connection->getId());
 			return;
 		}
 		$frameController = null;
@@ -140,16 +139,17 @@ class ConnectionController {
 	}
 	
 	private function _processOutboundFrame($outFrame){
-		ConnectedTraffic::log('sending to: ' . $outFrame->getReceiver(), 'ConnectedTraffic.Server');
-		$this->cm->getConnectionById($outFrame->getReceiver())->write($outFrame->getData());
+		ConnectedTraffic::log('sending to: ' . $outFrame->getReceiver(), 'ConnectedTraffic.ConnectionController');
+		ConnectedTraffic::getCM()->getConnectionById($outFrame->getReceiver())->write($outFrame->getData());
 		if ($outFrame->getOpcode() === OutboundFrame::OPCODE_CLOSE) {
-			$this->cm->getConnectionById($outFrame->getReceiver())->close();
+			ConnectedTraffic::getCM()->getConnectionById($outFrame->getReceiver())->close();
+			ConnectedTraffic::app()->onClosed($outFrame->getReceiver());
 			//$this->controller->registerClose($outFrame->getReceiver());
 		}
 	}
 
 	private function _handlePing(){
-		$connections = $this->cm->getConnectedConnections();
+		$connections = ConnectedTraffic::getCM()->getConnectedConnections();
 		$pingTimeLimit = time() - $this->config['pingTimeout'];
 		foreach ($connections as $connection) {
 			if ($connection->getLastIO() < $pingTimeLimit) {
@@ -165,166 +165,9 @@ class ConnectionController {
 		}
 	}
 
-	public function getCM(){
-		return $this->cm;
-	}
-
 	public function registerOpen($socket) {
 		ConnectedTraffic::log('registering new connection.', 'ConnectedTraffic.Controller.ConnectionController');
-		$this->cm->registerConnection($socket);
+		ConnectedTraffic::getCM()->registerConnection($socket);
+		ConnectedTraffic::app()->onConnected(ConnectedTraffic::getCM()->getConnectionBySocket($socket));
 	}
-/*
-	public function registerClose($connectionId) {
-		ConnectedTraffic::log('registering close for connection.', 'ConnectedTraffic.Controller.ConnectionController');
-		$this->requestController->onCloseClient($connectionId);
-		$this->gatherOutput();
-		$this->requestController->removeClient($connectionId);
-		foreach ($this->connections as $i => $connection) {
-			if ($connection->getSocket() === null && !$connection->isConnected()) {
-				array_splice($this->connections, $i, 1);
-			}
-		}
-	}*/
-
-/*
-
-
-	public function registerOutput($outFrame) {
-		ConnectedTraffic::log('registering new output.', 'ConnectedTraffic.Controller.ConnectionController');
-		$this->outputFrames[] = $outFrame;
-	}
-
-	public function registerOpen($socket) {
-		ConnectedTraffic::log('registering new connection.', 'ConnectedTraffic.Controller.ConnectionController');
-		$connection = new Connection($socket);
-		$this->connections[] = $connection;
-		$this->requestController->addClient($connection->getId());
-	}
-
-	public function registerClose($connectionId) {
-		ConnectedTraffic::log('registering close for connection.', 'ConnectedTraffic.Controller.ConnectionController');
-		$this->requestController->onCloseClient($connectionId);
-		$this->gatherOutput();
-		$this->requestController->removeClient($connectionId);
-		foreach ($this->connections as $i => $connection) {
-			if ($connection->getSocket() === null && !$connection->isConnected()) {
-				array_splice($this->connections, $i, 1);
-			}
-		}
-	}
-
-	public function processInput() {
-		$inFrames = $this->inputFrames;
-		$this->inputFrames = array();
-		foreach ($inFrames as $inFrame) {
-			$this->processFrame($inFrame);
-		}
-		// ping connections
-		$pingTimeLimit = time() - $this->config['pingTimeout'];
-		foreach ($this->connections as $i => $connection) {
-			if ($connection->getLastIO() < $pingTimeLimit) {
-				ConnectedTraffic::log(
-					'Pinging client ("' . $connection->getId() . '")' .
-					' due to inactivity.',
-					'ConnectedTraffic.Controller.ConnectionController'
-				);
-				$outFrame = new OutboundFrame($connection->getId());
-				$outFrame->setOpcode(OutboundFrame::OPCODE_PING);
-				$this->registerOutput($outFrame);
-			}
-		}
-	}
-
-	private function processFrame($inFrame) {
-		$connection = $this->getConnectionById($inFrame->getSender());
-		if (!$connection->hasHandshaked()) {
-			$outFrame = new OutboundFrame(
-				$inFrame->getSender(),
-				Handshake::generateResponse($inFrame->getPayload())
-			);
-			$outFrame->setIsHandshake();
-			$this->registerOutput($outFrame);
-			$connection->setHasHandshaked();
-			$this->requestController->onConnectClient($inFrame->getSender());
-			$this->gatherOutput();
-			return;
-		}
-		if ($inFrame->getOpcode() === InboundFrame::OPCODE_CLOSE) {
-			ConnectedTraffic::log(
-				$inFrame->getSender() . 
-				' requested to close connection. sending opcode 8!',
-				'ConnectedTraffic.Controller.ConnectionController'
-			);
-			$outFrame = new OutboundFrame($inFrame->getSender());
-			$outFrame->setOpcode(OutboundFrame::OPCODE_CLOSE);
-			$this->registerOutput($outFrame);
-		}
-		if ($inFrame->getOpcode() === InboundFrame::OPCODE_PING) {
-			ConnectedTraffic::log(
-				'Received "Ping" from client: ' .
-				$inFrame->getSender(),
-				'ConnectedTraffic.Controller.ConnectionController'
-			);
-			$outFrame = new OutboundFrame($inFrame->getSender());
-			$outFrame->setOpcode(OutboundFrame::OPCODE_PONG);
-			$this->registerOutput($outFrame);
-		}
-		if ($inFrame->getOpcode() === InboundFrame::OPCODE_PONG) {
-			ConnectedTraffic::log('Received "Pong" from client: ' . $inFrame->getSender(), 'ConnectedTraffic.Controller.ConnectionController');
-		}
-		if ($inFrame->getOpcode() === InboundFrame::OPCODE_BINARY) {
-			ConnectedTraffic::log('recieved unwanted(!) binary-frame from client: ' . $inFrame->getSender(), 'ConnectedTraffic.Controller.ConnectionController');
-		}
-		if ($inFrame->getOpcode() === InboundFrame::OPCODE_TEXT) {
-			ConnectedTraffic::log('Received Text-message from client: ' . $inFrame->getSender(), 'ConnectedTraffic.Controller.ConnectionController');
-			$this->requestController->addRequest($inFrame->getSender(), $inFrame->getPayload());
-			$this->requestController->run();
-			$this->gatherOutput();
-		}
-	}
-
-	private function gatherOutput() {
-		$response = $this->requestController->getResponse();
-		while ($response !== null) {
-			$outFrame = new OutboundFrame($response->getReceiver(), $response->getRawData());
-			$outFrame->setOpcode(OutboundFrame::OPCODE_TEXT);
-			$this->registerOutput($outFrame);
-			$response = $this->requestController->getResponse();
-		}
-	}
-
-	public function getOutput() {
-		if (count($this->outputFrames) > 0) {
-			$outFrame = array_splice($this->outputFrames, 0, 1);
-			return $outFrame[0];
-		}
-		return null;
-	}
-
-	public function getConnectionSockets() {
-		$sockets = array();
-		foreach ($this->connections as $connection) {
-			$sockets[] = $connection->getSocket();
-		}
-		return $sockets;
-	}
-
-	public function getConnectionBySocket($socket) {
-		foreach ($this->connections as $connection) {
-			if ($connection->getSocket() === $socket) {
-				return $connection;
-			}
-		}
-		return null;
-	}
-
-	public function getConnectionById($connectionId) { 
-		foreach ($this->connections as $connection) {
-			if ($connection->getId() === $connectionId) {
-				return $connection;
-			}
-		}
-		return null;
-	}
-	*/
 }
