@@ -17,28 +17,20 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-namespace ConnectedTraffic\Component\Logging;
+namespace ConnectedTraffic\Controller\Frame;
 
-/**
- * This class routes the log-lines into a specific file.
- * TODO: implement!
- */
-class FileLogRoute
-	extends \ConnectedTraffic\Component\Logging\LogRoute {
+use \ConnectedTraffic as ConnectedTraffic;
 
-	public function logError($line) {
-		echo 'to_file' . $line;
-	}
-	
-	public function logWarning($line) {
-		echo 'to_file' . $line;
-	}
-	
-	public function logInfo($line) {
-		echo 'to_file' . $line;
-	}
-	
-	public function logDebug($line) {
-		echo 'to_file' . $line;
+class PingFrameController
+	extends \ConnectedTraffic\Controller\Frame\FrameController {
+
+	public function processInboundFrame($inFrame){
+		ConnectedTraffic::log(
+			'Responding to ping-frame with pong.',
+			'ConnectedTraffic.Controller.Frame.PingFrameController'
+		);
+		$outFrame = new OutboundFrame($inFrame->getSender());
+		$outFrame->setOpcode(OutboundFrame::OPCODE_PONG);
+		$this->addOutboundFrame($outFrame);
 	}
 }

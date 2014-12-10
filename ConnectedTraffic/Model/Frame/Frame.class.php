@@ -106,11 +106,10 @@ abstract class Frame {
 
 		
 		if ($this->header['masked'] === true) {
-			$masking = new Masking(array(
-				$rawData[0], $rawData[1], $rawData[2], $rawData[3]
-			));
+			$masking = new Masking(substr($rawData, 0, 4));
 			$rawData = substr($rawData, 4);
-			$rawData = $masking->unmaskBytes($rawData);
+			if(strlen ($rawData) > 0)
+				$rawData = $masking->unmaskBytes($rawData);
 		}
 		$this->payload = $rawData;
 	}

@@ -32,9 +32,16 @@ require_once('Component/Logging/ConsoleLogRoute.class.php');
 // Controller
 require_once('Controller/ConnectionController.class.php');
 require_once('Controller/RequestController.class.php');
+require_once('Controller/Frame/FrameController.class.php');
+require_once('Controller/Frame/CloseFrameController.class.php');
+require_once('Controller/Frame/PingFrameController.class.php');
+require_once('Controller/Frame/PongFrameController.class.php');
+require_once('Controller/Frame/BinaryFrameController.class.php');
+require_once('Controller/Frame/TextFrameController.class.php');
 
 // Model
 require_once('Model/Connection.class.php');
+require_once('Model/ConnectionManager.class.php');
 require_once('Model/Client.class.php');
 
 // Model (Frame)
@@ -60,6 +67,7 @@ require_once('Helper/Masking.class.php');
 
 // Exceptions
 require_once('Exception/InvalidConfigException.class.php');
+require_once('Exception/InvalidParameterException.class.php');
 
 // Public for interaction
 require_once('Public/Message.class.php');

@@ -52,7 +52,7 @@ class Handshake {
 			$header[$headerParts[0]] = $headerParts[1];
 		}
 
-		if (count($header) < 1 ||
+		if (count($header) === 0 ||
 			!isset($header['Sec-WebSocket-Key']) ||
 			$header['Sec-WebSocket-Key'] === '') {
 			return '';
@@ -67,7 +67,7 @@ class Handshake {
 			'Connection: Upgrade',
 			'Sec-WebSocket-Accept: ' . $accept,
 		);
-
+		var_dump($responseParts);
 		return implode("\r\n", $responseParts) . "\r\n\r\n";
 	}
 }

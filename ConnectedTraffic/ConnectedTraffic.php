@@ -19,10 +19,10 @@
 
 include(__DIR__ . '/include.php');
 
-if (defined('SERVER_NAME')) {
+if (!defined('SERVER_NAME')) {
 	define('SERVER_NAME', 'ConnectedTraffic');
 }
-if (defined('SERVER_VERSION')) {
+if (!defined('SERVER_VERSION')) {
 	define('SERVER_VERSION', '0.1');
 }
 if (!defined('SERVER_IP')) {

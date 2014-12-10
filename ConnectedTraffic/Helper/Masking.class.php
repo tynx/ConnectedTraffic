@@ -19,8 +19,8 @@
 
 namespace ConnectedTraffic\Helper;
 
-use ConnectedTraffic\Exception\InvalidMaskingKeyException
-	as InvalidMaskingKeyException;
+use ConnectedTraffic\Exception\InvalidParameterException
+	as InvalidParameterException;
 
 /**
  * This class provides an easy way to demask a frame. Currently there is

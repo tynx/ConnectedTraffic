@@ -49,51 +49,33 @@ class ConnectedTrafficServer {
 	// this function runs forever (socket-server itself)
 	public function run() {
 		$this->running = true;
-		$write = null;
-		$except = null;
 		while ($this->running) {
-			$activeSockets = $this->getActiveSockets();
-			$changes = socket_select($activeSockets, $write, $except, 1);
-			if ($changes === 0) {
-				$this->handleInputOutput();
-				continue;
-			}
-			foreach ($activeSockets as $socket) {
-				$connection = $this->controller->getConnectionBySocket($socket);
-				if ($socket === $this->masterSocket) {
-					$newSocket = socket_accept($this->masterSocket);
-					if ($newSocket < 0) {
-						ConnectedTraffic::log('socket_accept() failed', 'ConnectedTraffic.Server', 'error');
-					} else {
-						$this->controller->registerOpen($newSocket);
-					}
-				} elseif ($connection !== null) {
-					$msg = $connection->read();
-					if ($msg === null) {
-						$connection->close();
-						$this->controller->registerClose($connection->getId());
-						continue;
-					}
-					$inFrame = new InboundFrame($connection->getId(), $msg);
-					$this->controller->registerInput($inFrame);
-					$this->handleInputOutput();
-				}
-			}
+			$this->_runCycle();
+			$this->controller->process();
 		}
 		ConnectedTraffic::log('websocket-server gone!', 'ConnectedTraffic.Server');
 	}
 
-	private function handleInputOutput() {
-		$this->controller->processInput();
-		$outFrame = $this->controller->getOutput();
-		while ($outFrame !== null) {
-			ConnectedTraffic::log('sending to: ' . $outFrame->getReceiver(), 'ConnectedTraffic.Server');
-			$this->controller->getConnectionById($outFrame->getReceiver())->write($outFrame->getData());
-			if ($outFrame->getOpcode() === Frame::OPCODE_CLOSE) {
-				$this->controller->getConnectionById($outFrame->getReceiver())->close();
-				$this->controller->registerClose($outFrame->getReceiver());
+	private function _runCycle(){
+		$write = null;
+		$except = null;
+		$sockets = $this->controller->getCM()->getConnectedSockets();
+		$sockets[] = $this->masterSocket;
+		$changes = socket_select($sockets, $write, $except, 1);
+		if ($changes === 0) {
+			return;
+		}
+		foreach ($sockets as $socket) {
+			if ($socket === $this->masterSocket) {
+				$newSocket = socket_accept($this->masterSocket);
+				if ($newSocket < 0) {
+					ConnectedTraffic::log('socket_accept() failed', 'ConnectedTraffic.Server', 'error');
+				} else {
+					$this->controller->registerOpen($newSocket);
+				}
+				continue;
 			}
-			$outFrame = $this->controller->getOutput();
+			$this->controller->registerInput($socket);
 		}
 	}
 
@@ -107,7 +89,7 @@ class ConnectedTrafficServer {
 	}
 
 	private function getActiveSockets() {
-		$sockets = $this->controller->getConnectionSockets();
+		$sockets = $this->controller->getCM()->getConnectedSockets();
 		$sockets[] = $this->masterSocket;
 		return $sockets;
 	}

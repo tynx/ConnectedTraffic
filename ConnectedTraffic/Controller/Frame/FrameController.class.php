@@ -17,28 +17,21 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-namespace ConnectedTraffic\Component\Logging;
+namespace ConnectedTraffic\Controller\Frame;
 
-/**
- * This class routes the log-lines into a specific file.
- * TODO: implement!
- */
-class FileLogRoute
-	extends \ConnectedTraffic\Component\Logging\LogRoute {
+use \ConnectedTraffic as ConnectedTraffic;
 
-	public function logError($line) {
-		echo 'to_file' . $line;
-	}
+abstract class FrameController {
 	
-	public function logWarning($line) {
-		echo 'to_file' . $line;
-	}
+	private $outboundFrames = array();
 	
-	public function logInfo($line) {
-		echo 'to_file' . $line;
+	public abstract function processInboundFrame($inFrame);
+
+	protected final function addOutboundFrame($outFrame){
+		$this->outboundFrames[] = $outFrame;
 	}
-	
-	public function logDebug($line) {
-		echo 'to_file' . $line;
+
+	public final function getOutboundFrames(){
+		return $this->outboundFrames;
 	}
 }

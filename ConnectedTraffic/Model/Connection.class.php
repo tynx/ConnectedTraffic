@@ -33,6 +33,7 @@ class Connection {
 		if ($socket !== null) {
 			$this->connected = true;
 			$this->connectTime = time();
+			$this->lastIO = time();
 		}
 	}
 

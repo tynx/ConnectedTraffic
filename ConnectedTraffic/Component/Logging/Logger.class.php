@@ -22,45 +22,62 @@ namespace ConnectedTraffic\Component\Logging;
 use \ConnectedTraffic\Exception\InvalidConfigException
 	as InvalidConfigException;
 
-// for logging
+/**
+ * This class handles all the logging. If a log message is to be set,
+ * it routes the message to all configured LogRoutes. This means the
+ * same message can be logged on all Routes if needed/wished.
+ */
 class Logger {
 
+	/**
+	 * All the logRoute-objects are stored in here.
+	 */
 	private $logRoutes = array();
-	private $config = array();
+
 
 	public function __construct($config) {
-		$this->config = $config;
-		$this->_addRoutes();
+		if (!is_array($config)) {
+			throw new InvalidConfigException(
+				'No valid config provided for Logging!'
+			);
+		} else {
+			foreach ($config as $routeConfig) {
+				$this->_addRoute($routeConfig);
+			}
+		}
 	}
 
-	private function _addRoutes() {
-		foreach ($this->config as $routeConfig) {
-			if (!isset($routeConfig['className']) ||
-				empty($routeConfig['className'])) {
-				throw new InvalidConfigException(
-					'No valid className for Logroute.'
-				);
-			}
-			$found = false;
-			$className = $routeConfig['className'];
-			if (class_exists($className, false)) {
-				$found = true;
-			}
-			
-			$className = '\\ConnectedTraffic\\Component\\Logging\\' .
-				$className;
-			if (class_exists($className, false)) {
-				$found = true;
-			}
-			if ($found === false) {
-				throw new InvalidConfigException(
-					'No valid className for Logroute.'
-				);
-			}
-			$route = new $className();
-			$route->setConfig($routeConfig);
-			$this->logRoutes[] = $route;
+	private function _addRoute($routeConfig) {
+		if (!is_array($routeConfig)) {
+			throw new InvalidConfigException(
+				'No valid config provided for LogRoute!'
+			);
 		}
+		if (!isset($routeConfig['className']) ||
+			empty($routeConfig['className'])) {
+			throw new InvalidConfigException(
+				'No valid className for Logroute.'
+			);
+		}
+		$className = '\\ConnectedTraffic\\Component\\Logging\\' .
+			$routeConfig['className'];
+		$route = null;
+		
+		if (class_exists($className, false)) {
+			$route = new $className();
+		}
+		
+		$className = $routeConfig['className'];
+		if ($route === null && class_exists($className, false)) {
+			$route = new $className();
+		}
+		if ($route === null) {
+			throw new InvalidConfigException(
+				'No valid className for Logroute.'
+			);
+		}
+		$route->setConfig($routeConfig);
+		$this->logRoutes[] = $route;
 	}
 
 	public function log($message, $category, $level) {
