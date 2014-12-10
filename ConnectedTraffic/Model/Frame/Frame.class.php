@@ -78,16 +78,29 @@ abstract class Frame {
 		$rawData = substr($rawData, 2);
 
 		if ($this->header['length'] === 127) {
-			$bits = decbin(ord($rawData[0])) . decbin(ord($rawData[1])) .
-			decbin(ord($rawData[2])) . decbin(ord($rawData[3])) .
-			decbin(ord($rawData[4])) . decbin(ord($rawData[5])) .
-			decbin(ord($rawData[6])) . decbin(ord($rawData[7]));
-			$this->header['length'] = bindec($bits);
+			$this->header['length'] = bindec(
+				decbin(
+					ord($rawData[0])) . decbin(ord($rawData[1])
+				) .
+				decbin(
+					ord($rawData[2])) . decbin(ord($rawData[3])
+				) .
+				decbin(
+					ord($rawData[4])) . decbin(ord($rawData[5])
+				) .
+				decbin(
+					ord($rawData[6])) . decbin(ord($rawData[7])
+				)
+			);
 			$rawData = substr($rawData, 8);
 		}
 
 		if ($this->header['length'] === 126) {
-			$this->header['length'] = bindec(decbin(ord($rawData[0])) . decbin(ord($rawData[1])));
+			$this->header['length'] = bindec(
+				decbin(
+					ord($rawData[0])) . decbin(ord($rawData[1])
+				)
+			);
 			$rawData = substr($rawData, 2);
 		}
 
@@ -106,13 +119,20 @@ abstract class Frame {
 		$rawData = '';
 		$bits = (($this->header['fin'] === true) ? '1' : '0') . '000';
 
-		$bits .= str_pad(decbin($this->getOpcode()), 4, '0', STR_PAD_LEFT) . '0';
+		$bits .= str_pad(
+			decbin($this->getOpcode()),
+			4,
+			'0',
+			STR_PAD_LEFT
+		) . '0';
 		$lengthBits = decbin(strlen($this->payload));
 
 		if (strlen($this->payload) >= 65535) {
-			$bits .= '1111111' . str_pad($lengthBits, 64, '0', STR_PAD_LEFT);
+			$bits .= '1111111' .
+				str_pad($lengthBits, 64, '0', STR_PAD_LEFT);
 		} elseif (strlen($this->payload) >= 126) {
-			$bits .= '1111110' . str_pad($lengthBits, 16, '0', STR_PAD_LEFT);
+			$bits .= '1111110' .
+				str_pad($lengthBits, 16, '0', STR_PAD_LEFT);
 		} else {
 			$bits .= str_pad($lengthBits, 7, '0', STR_PAD_LEFT);
 		}

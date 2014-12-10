@@ -38,14 +38,16 @@ class JSONParser implements ParserInterface {
 		}
 
 		if (!isset($this->jsonInAssoc['header'])) {
-			$this->errorMessage = 'Did not receive valid Request. Header missing.';
+			$this->errorMessage = 'Did not receive valid Request. ' .
+			'Header missing.';
 			return false;
 		}
 
 		$header = $this->jsonInAssoc['header'];
 
 		if (!isset($header['action'])) {
-			$this->errorMessage = 'Did not receive valid Request. Action missing.';
+			$this->errorMessage = 'Did not receive valid Request. ' .
+			'Action missing.';
 			return false;
 		}
 
@@ -59,13 +61,15 @@ class JSONParser implements ParserInterface {
 			$this->header->setLength($header['length']);
 		}
 
-		if (isset($header['arguments']) && is_array($header['arguments'])) {
+		if (isset($header['arguments']) &&
+			is_array($header['arguments'])) {
 			foreach ($header['arguments'] as $argument => $value) {
 				$this->header->setArgument($argument, $value);
 			}
 		}
 
-		if (isset($this->jsonInAssoc['body']) && $this->jsonInAssoc['body'] !== null) {
+		if (isset($this->jsonInAssoc['body']) &&
+			$this->jsonInAssoc['body'] !== null) {
 			$this->body = $this->jsonInAssoc['body'];
 		}
 		return true;

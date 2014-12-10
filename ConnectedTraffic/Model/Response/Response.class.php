@@ -32,7 +32,13 @@ class Response {
 		$statusMessage = 'OK'
 	) {
 		$this->receiver = $receiver;
-		$this->header = new ResponseHeader(sha1(uniqid() . time()), strlen($body), $status, $statusMessage);
+		$id = sha1(uniqid() . time());
+		$this->header = new ResponseHeader(
+			$id,
+			strlen($body),
+			$status,
+			$statusMessage
+		);
 		$this->body = $body;
 		//conf based
 		$this->serializer = new JSONSerializer($this);

@@ -19,22 +19,57 @@
 
 namespace ConnectedTraffic\Helper;
 
-// handles the demasking of a frame
+use ConnectedTraffic\Exception\InvalidMaskingKeyException
+	as InvalidMaskingKeyException;
+
+/**
+ * This class provides an easy way to demask a frame. Currently there is
+ * no support for masking frames, as this is not really needed as the
+ * server is not supposed to mask frames. But may be needed in future...
+ * http://tools.ietf.org/html/rfc6455#section-5.3
+ */
 class Masking {
 
-	const MAX_KEY_NUMBER = 4;
-	private $keys = array('', '', '', '');
+	/**
+	 * 4 Bytes are used for masking (=>32bit)
+	 */
+	const KEY_LENGTH = 4;
 
-	public function __construct($keys = NULL) {
-		if (is_array($keys) && count($keys) === self::MAX_KEY_NUMBER) {
-			$this->keys = $keys;
+	/**
+	 * The 4 bytes itself
+	 */
+	private $keys = "\0\0\0\0";
+
+	/**
+	 * We need the masking-keys to mask/demask a frame. It is always
+	 * 4bytes. This class expects an array of 4 Strings or chars. 
+	 * @params (array)keys the keys which should be used to demask
+	 */
+	public function __construct($keys) {
+		if (!is_string($keys) || strlen ($keys) !== self::KEY_LENGTH) {
+			throw new InvalidParameterException(
+				'Invalid masking-key provided.'
+			);
 		}
+		$this->keys = $keys;
 	}
 
+	/**
+	 * This method unmasks given bytes with the masking keys provided in
+	 * while instanciating this object.
+	 * @param (String)masked the bytes to unmask
+	 * @return (String) the unsmasked bytes
+	 */
 	public function unmaskBytes($masked) {
+		if (!is_string($masked)) {
+			throw new InvalidParameterException(
+				'Invalid type in maskedBytes. String expected.'
+			);
+		}
 		$unmasked = '';
 		for ($i = 0; $i < strlen($masked); $i++) {
-			$xor = ord($masked[$i]) ^ ord($this->keys[($i % self::MAX_KEY_NUMBER)]);
+			$key = $this->keys[($i % self::KEY_LENGTH)];
+			$xor = ord($masked[$i]) ^ ord($key);
 			$unmasked .= urldecode('%' . dechex($xor));
 		}
 		return $unmasked;

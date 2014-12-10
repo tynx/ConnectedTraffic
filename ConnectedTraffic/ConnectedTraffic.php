@@ -19,9 +19,15 @@
 
 include(__DIR__ . '/include.php');
 
-defined('SERVER_NAME') || define('SERVER_NAME', 'ConnectedTraffic');
-defined('SERVER_VERSION') || define('SERVER_VERSION', '0.1');
-defined('SERVER_IP') || define('SERVER_IP', getHostByName(getHostName()));
+if (defined('SERVER_NAME')) {
+	define('SERVER_NAME', 'ConnectedTraffic');
+}
+if (defined('SERVER_VERSION')) {
+	define('SERVER_VERSION', '0.1');
+}
+if (!defined('SERVER_IP')) {
+	define('SERVER_IP', getHostByName(getHostName()));
+}
 
 use \ConnectedTraffic\ConnectedTrafficServer as ConnectedTrafficServer;
 use \ConnectedTraffic\Component\Logging\Logger as Logger;

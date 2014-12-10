@@ -22,7 +22,8 @@
 namespace ConnectedTraffic;
 
 use \ConnectedTraffic as ConnectedTraffic;
-use \ConnectedTraffic\Controller\ConnectionController as ConnectionController;
+use \ConnectedTraffic\Controller\ConnectionController
+	as ConnectionController;
 use \ConnectedTraffic\Model\Frame\Frame as Frame;
 use \ConnectedTraffic\Model\Frame\InboundFrame as InboundFrame;
 use \ConnectedTraffic\Model\Frame\OutboundFrame as OutboundFrame;
@@ -40,7 +41,8 @@ class ConnectedTrafficServer {
 	public function __construct() {
 		$this->config = ConnectedTraffic::getConfig('server');
 		$this->controller = new ConnectionController();
-		ConnectedTraffic::log('Starting Server (PID: ' . posix_getpid() . ')', 'ConnectedTraffic.Server');
+		$msg = 'Starting Server (PID: ' . posix_getpid() . ')';
+		ConnectedTraffic::log($msg, 'ConnectedTraffic.Server');
 		$this->bind();
 	}
 
@@ -96,7 +98,7 @@ class ConnectedTrafficServer {
 	}
 
 	private function bind() {
-		$this->masterSocket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)                         || die("socket_create() failed");
+		($this->masterSocket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP))                       || die("socket_create() failed");
 		socket_set_option($this->masterSocket, SOL_SOCKET, SO_REUSEADDR, 1)                        || die("socket_option() failed");
 		socket_bind($this->masterSocket, $this->config['bindAddress'], $this->config['bindPort'])  || die("socket_bind() failed");
 		socket_listen($this->masterSocket, 20)                                                     || die("socket_listen() failed");

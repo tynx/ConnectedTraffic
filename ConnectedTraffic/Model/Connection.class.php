@@ -74,7 +74,8 @@ class Connection {
 
 	public function write($message) {
 		$this->lastIO = time();
-		if (socket_write($this->socket, $message, strlen($message)) !== false) {
+		$bytes = socket_write($this->socket, $message, strlen($message));
+		if ($bytes !== false) {
 			return true;
 		}
 		return false;

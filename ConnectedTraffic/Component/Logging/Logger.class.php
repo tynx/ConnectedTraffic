@@ -19,7 +19,8 @@
 
 namespace ConnectedTraffic\Component\Logging;
 
-use \ConnectedTraffic\Exception\InvalidConfigException as InvalidConfigException;
+use \ConnectedTraffic\Exception\InvalidConfigException
+	as InvalidConfigException;
 
 // for logging
 class Logger {
@@ -29,24 +30,32 @@ class Logger {
 
 	public function __construct($config) {
 		$this->config = $config;
-		new FileLogRoute();
-		$this->addRoutes();
+		$this->_addRoutes();
 	}
 
-	private function addRoutes() {
+	private function _addRoutes() {
 		foreach ($this->config as $routeConfig) {
-			if (!isset($routeConfig['className']) || empty($routeConfig['className'])) {
-				throw new InvalidConfigException('No valid className for Logroute.');
+			if (!isset($routeConfig['className']) ||
+				empty($routeConfig['className'])) {
+				throw new InvalidConfigException(
+					'No valid className for Logroute.'
+				);
 			}
-			$className = null;
-			if (class_exists($routeConfig['className'], false)) {
-				$className = $routeConfig['className'];
+			$found = false;
+			$className = $routeConfig['className'];
+			if (class_exists($className, false)) {
+				$found = true;
 			}
-			if (class_exists('\\ConnectedTraffic\\Component\\Logging\\' . $routeConfig['className'], false)) {
-				$className = '\\ConnectedTraffic\\Component\\Logging\\' . $routeConfig['className'];
+			
+			$className = '\\ConnectedTraffic\\Component\\Logging\\' .
+				$className;
+			if (class_exists($className, false)) {
+				$found = true;
 			}
-			if ($className === null) {
-				throw new InvalidConfigException('No valid className for Logroute.');
+			if ($found === false) {
+				throw new InvalidConfigException(
+					'No valid className for Logroute.'
+				);
 			}
 			$route = new $className();
 			$route->setConfig($routeConfig);

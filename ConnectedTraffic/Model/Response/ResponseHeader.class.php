@@ -29,13 +29,20 @@ class ResponseHeader {
 	private $time = 0;
 	private $length = 0;
 
-	public function __construct($id, $length, $status, $statusMessage) {
+	public function __construct(
+		$id,
+		$length,
+		$status,
+		$statusMessage
+	) {
 		$this->id = $id;
 		$this->status = $status;
 		$this->statusMessage = $statusMessage;
-		$this->time = round(microtime(true) * 1000); // javascript parseable time
+		// javascript parseable time
+		$this->time = round(microtime(true) * 1000);
 		$this->length = $length;
-		$this->server = SERVER_NAME . ' (' . SERVER_VERSION . ') at ' . SERVER_IP;
+		$this->server = SERVER_NAME . ' (' . SERVER_VERSION . ') ' . 
+			'at ' . SERVER_IP;
 	}
 
 	public function getId() {

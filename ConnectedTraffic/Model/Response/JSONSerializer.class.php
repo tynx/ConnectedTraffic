@@ -29,13 +29,20 @@ class JSONSerializer implements SerializerInterface {
 
 	public function serialize() {
 		$assocHeader = array();
-		$assocHeader['id'] = $this->response->getHeader()->getId();
-		$assocHeader['status'] = $this->response->getHeader()->getStatus();
-		$assocHeader['header']['statusMessage'] = $this->response->getHeader()->getStatusMessage();
-		$assocHeader['server'] = $this->response->getHeader()->getServer();
-		$assocHeader['time'] = $this->response->getHeader()->getTime();
-		$assocHeader['length'] = $this->response->getHeader()->getLength();
-		$this->rawData = '{"header":' . json_encode($assocHeader) . ', "body":"' . str_replace(array('"', '\/'), array('\"', '/'), $this->response->getBody()) . '"}';
+		$objHeader = $this->response->getHeader();
+		$assocHeader['id'] = $objHeader->getId();
+		$assocHeader['status'] = $objHeader->getStatus();
+		$assocHeader['statusMessage'] = $objHeader->getStatusMessage();
+		$assocHeader['server'] = $objHeader->getServer();
+		$assocHeader['time'] = $objHeader->getTime();
+		$assocHeader['length'] = $objHeader->getLength();
+		
+		$body = $this->response->getBody();
+		$search = array('"', '\/');
+		$replace = array('\"', '/');
+		$body = str_replace($search, $replace, $body);
+		$this->rawData = '{"header":' . json_encode($assocHeader) . 
+			', "body":"' . $body . '"}';
 	}
 
 	public function getRawData() {

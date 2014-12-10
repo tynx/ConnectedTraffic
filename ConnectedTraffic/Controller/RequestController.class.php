@@ -36,7 +36,8 @@ class RequestController {
 
 	public function __construct() {
 		$this->config = ConnectedTraffic::getConfig('app');
-		if (isset($this->config['eventController']) && !empty($this->config['eventController'])) {
+		if (isset($this->config['eventController']) &&
+		!empty($this->config['eventController'])) {
 			$className = $this->config['eventController'];
 			if (file_exists($this->config['controllerDirectory'] . $className . '.class.php')) {
 				require_once($this->config['controllerDirectory'] . $className . '.class.php');
@@ -65,14 +66,18 @@ class RequestController {
 
 	public function onConnectClient($connectionId) {
 		if ($this->eventController !== null) {
-			$this->eventController->onConnect($this->clients, $connectionId);
+			$this->eventController->onConnect(
+				$this->clients, $connectionId
+			);
 			$this->handleEventResponses();
 		}
 	}
 
 	public function onCloseClient($connectionId) {
 		if ($this->eventController !== null) {
-			$this->eventController->onClose($this->clients, $connectionId);
+			$this->eventController->onClose(
+				$this->clients, $connectionId
+			);
 			$this->handleEventResponses();
 		}
 	}
@@ -87,7 +92,12 @@ class RequestController {
 
 	private function processRequest($request) {
 		if (!$request->isValid()) {
-			$response = new Response($request->getSender(), null, -1, $request->getErrorMessage());
+			$response = new Response(
+				$request->getSender(),
+				null,
+				-1,
+				$request->getErrorMessage()
+			);
 			$this->registerResponse($response);
 			return;
 		}
@@ -95,7 +105,12 @@ class RequestController {
 		$parts = explode('/', $request->getHeader()->getAction());
 		
 		if (count($parts) !== 2) {
-			$response = new Response($request->getSender(), null, -2, 'Invalid action provided!');
+			$response = new Response(
+				$request->getSender(),
+				null,
+				-2,
+				'Invalid action provided!'
+			);
 			$this->registerResponse($response);
 			return;
 		}
@@ -104,7 +119,12 @@ class RequestController {
 		$method = $parts[1];
 		
 		if (empty($method) || empty($controller)) {
-			$response = new Response($request->getSender(), null, -3, 'Invalid action provided!');
+			$response = new Response(
+				$request->getSender(),
+				null,
+				-3,
+				'Invalid action provided!'
+			);
 			$this->registerResponse($response);
 			return;
 		}
@@ -112,21 +132,41 @@ class RequestController {
 		$className = ucfirst($controller) . 'Controller';
 		$methodName = 'action' . ucFirst($method);
 		if (!file_exists($this->config['controllerDirectory'] . $className . '.class.php')) {
-			$response = new Response($request->getSender(), null, -4, 'Request could be resolved!');
+			$response = new Response(
+				$request->getSender(),
+				null,
+				-4,
+				'Request could be resolved!'
+			);
 			$this->registerResponse($response);
 			return false;
 		}
 		require_once($this->config['controllerDirectory'] . $className . '.class.php');
 		if (!class_exists($className)) {
-			$response = new Response($request->getSender(), null, -5, 'Request could be resolved!');
+			$response = new Response(
+				$request->getSender(),
+				null,
+				-5,
+				'Request could be resolved!'
+			);
 			$this->registerResponse($response);
 			return;
 		}
 
-		$controller = new $className($this->clients, $request->getSender(), $request->getHeader(), $request->getBody());
+		$controller = new $className(
+			$this->clients,
+			$request->getSender(),
+			$request->getHeader(),
+			$request->getBody()
+		);
 
 		if (!method_exists($controller, $methodName)) {
-			$response = new Response($request->getSender(), null, -6, 'Request could be resolved!');
+			$response = new Response(
+				$request->getSender(),
+				null,
+				-6,
+				'Request could be resolved!'
+			);
 			$this->registerResponse($response);
 			return;
 		}
@@ -137,7 +177,12 @@ class RequestController {
 		$params = $rm->getParameters();
 		foreach ($params as $i => $param) {
 			if (!$param->isOptional() && $request->getHeader()->getArgument($param->getName()) === null) {
-				$response = new Response($request->getSender(), null, -7, 'Invalid arguments provided!');
+				$response = new Response(
+					$request->getSender(),
+					null,
+					-7,
+					'Invalid arguments provided!'
+				);
 				$this->registerResponse($response);
 				return false;
 			}
@@ -145,14 +190,22 @@ class RequestController {
 		}
 
 		if (!is_subclass_of($controller, 'BaseController')) {
-			$response = new Response($request->getSender(), null, -8, 'Request could be resolved!');
+			$response = new Response(
+				$request->getSender(),
+				null,
+				-8,
+				'Request could be resolved!'
+			);
 			$this->registerResponse($response);
 			return;
 		}
 		call_user_func_array(array($controller, $methodName), $arguments);
 		$messages = $controller->getMessages();
 		foreach ($messages as $message) {
-			$response = new Response($message->getReceiver(), $message->getMessage());
+			$response = new Response(
+				$message->getReceiver(),
+				$message->getMessage()
+			);
 			$this->registerResponse($response);
 		}
 	}
@@ -160,7 +213,10 @@ class RequestController {
 	private function handleEventResponses() {
 		$messages = $this->eventController->getMessages();
 		foreach ($messages as $message) {
-			$response = new Response($message->getReceiver(), $message->getMessage());
+			$response = new Response(
+				$message->getReceiver(),
+				$message->getMessage()
+			);
 			$this->registerResponse($response);
 		}
 	}

@@ -19,20 +19,42 @@
 
 namespace ConnectedTraffic\Component\Logging;
 
-class ConsoleLogRoute extends \ConnectedTraffic\Component\Logging\LogRoute {
+/**
+ * This class routes the log-lines onto the STDOUT via simple echo
+ * statements.
+ */
+class ConsoleLogRoute
+	extends \ConnectedTraffic\Component\Logging\LogRoute {
+
+	/**
+	 * This method prints out a red line
+	 * @param (string)line the line to log
+	 */
 	public function logError($line) {
-		echo $line;
+		echo "\e[0;31m" . $line;
 	}
 
+	/**
+	 * This method prints out a orange line
+	 * @param (string)line the line to log
+	 */
 	public function logWarning($line) {
-		echo $line;
+		echo "\e[1;31m" . $line;
 	}
 
+	/**
+	 * This method prints out a white/normal line
+	 * @param (string)line the line to log
+	 */
 	public function logInfo($line) {
-		echo $line;
+		echo "\e[0;37m" . $line;
 	}
 
+	/**
+	 * This method prints out a yellow line
+	 * @param (string)line the line to log
+	 */
 	public function logDebug($line) {
-		echo $line;
+		echo "\e[0;33m" . $line;
 	}
 }

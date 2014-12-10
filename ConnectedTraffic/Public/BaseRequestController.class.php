@@ -41,7 +41,10 @@ abstract class BaseController {
 	}
 
 	protected final function addResponse($message) {
-		$this->messages[] = new Message($this->sender->getConnectionId(), $message);
+		$this->messages[] = new Message(
+			$this->sender->getConnectionId(),
+			$message
+		);
 	}
 
 	protected final function addMessage($receiver, $message) {

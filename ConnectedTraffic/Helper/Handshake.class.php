@@ -21,10 +21,25 @@
 
 namespace ConnectedTraffic\Helper;
 
+/**
+ * This class provides a single method which autogenerates the according
+ * upgrade-message for the websocket-protocol.
+ */
 class Handshake {
 
+	/**
+	 * Magic and RFC-defined GUID
+	 * http://tools.ietf.org/html/rfc6455#section-1.3
+	 */
 	const MAGIC_GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 
+	/**
+	 * This parses the header of the request and tries to create the
+	 * according response.
+	 * @param (string)request the input as string
+	 * @return (string) empty string (on fail) or the according upgrade
+	 * as string
+	 */
 	public static function generateResponse($request) {
 
 		$header = array();
@@ -37,12 +52,14 @@ class Handshake {
 			$header[$headerParts[0]] = $headerParts[1];
 		}
 
-		if (count($header) < 1 || !isset($header['Sec-WebSocket-Key'])
-			|| $header['Sec-WebSocket-Key'] === '') {
+		if (count($header) < 1 ||
+			!isset($header['Sec-WebSocket-Key']) ||
+			$header['Sec-WebSocket-Key'] === '') {
 			return '';
 		}
 
-		$accept = base64_encode(sha1($header['Sec-WebSocket-Key'] . Handshake::MAGIC_GUID, true));
+		$accept = $header['Sec-WebSocket-Key'] . Handshake::MAGIC_GUID;
+		$accept = base64_encode(sha1($accept, true));
 
 		$responseParts = array(
 			'HTTP/1.1 101 Switching Protocols',
