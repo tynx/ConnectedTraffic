@@ -23,9 +23,11 @@ abstract class EventController {
 	private $responses = array();
 	protected $clients = array();
 	protected $sender = null;
+	protected $senderId = null;
 
 	public final function __construct($clients, $senderId) {
 		$this->clients = $clients;
+		$this->senderId = $senderId;
 		foreach ($clients as $client) {
 			if ($client->getConnectionId() === $senderId) {
 				$this->sender = $client;
@@ -40,8 +42,10 @@ abstract class EventController {
 	public abstract function onClosed();
 
 	protected final function addResponse($body, $connectionId = null, $status = 0, $statusMessage = 'OK') {
-		if($connectionId === null)
+		if($connectionId === null || $this->sender !== null)
 			$connectionId = $this->sender->getConnectionId();
+		if($connectionId === null)
+			$connetionId = $this->senderId;
 		$this->responses[] = new Response($connectionId, $body, $status, $statusMessage);
 	}
 
