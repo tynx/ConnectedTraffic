@@ -17,6 +17,8 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+namespace ConnectedTraffic\Model;
+
 class Client {
 	private $connectionId = null;
 	private $customValues = array();

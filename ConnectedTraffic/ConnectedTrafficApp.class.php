@@ -21,33 +21,134 @@
 
 namespace ConnectedTraffic;
 
+use \ReflectionMethod as ReflectionMethod;
 use \ConnectedTraffic as ConnectedTraffic;
 use \ConnectedTraffic\Model\Response\Response as Response;
 
 class ConnectedTrafficApp {
 	
+	private $allowedEvents = array(
+		'onConnected',
+		'onInitialized',
+		'onReceived',
+		'onSent',
+		'onClosed',
+	);
+	private $config = array();
 	private $responses = array();
 	
-	public function onConnected($connectionId){
-		echo "APP: connected event!\n";
+
+	public function __construct(){
+		$this->config = ConnectedTraffic::config()->getAppConfig();
+		$this->_loadFiles();
 	}
-	public function onInitialized($connectionId){
-		echo "APP: initialized event!\n";
+
+	private function _loadFiles(){
+		if(!isset($this->config['includes']) || !is_array($this->config['includes']))
+			return;
+		foreach($this->config['includes'] as $include){
+			require_once(APP_ROOT . '/' . $include);
+		}
 	}
-	public function onMessage($connectionId, $data){
-		echo "APP: message event!\n";
-		//echo "====\n" . $data . "\n====\n";
+
+	public function processEvent($eventType, $connectionId, $data = null){
+		if(!in_array($eventType, $this->allowedEvents))
+			return;
+		foreach($this->config['eventControllers'] as $className){
+			$controller = new $className(
+				ConnectedTraffic::getCM()->getClients(),
+				$connectionId
+			);
+			$arguments = array();
+			if($data !== null){
+				$arguments['data'] = $data;
+			}
+			call_user_func_array(array($controller, $eventType), $arguments);
+		}
 	}
-	public function onClosed($connectionId){
-		echo "APP: closed event!\n";
-	}
+
 	public function processRequest($request){
 		echo "APP: processing request!\n";
-		echo "====\n";
-		//$request->getBody();
-		$this->responses[] = new Response($request->getSender(), "haba");
-		echo "\n====\n";
+		if (!$request->isValid()) {
+			$response = new Response(
+				$request->getSender(),
+				null,
+				-1,
+				$request->getErrorMessage()
+			);
+			$this->responses[] = $response;
+			return;
+		}
+		
+		$parts = explode('/', $request->getHeader()->getAction());
+		
+		$className = ucfirst($parts[0]) . 'Controller';
+		$methodName = 'action' . ucFirst($parts[1]);
+
+		if (!in_array($className, $this->config['requestControllers']) ||
+			!class_exists($className)) {
+			$response = new Response(
+				$request->getSender(),
+				null,
+				-4,
+				'Request could be resolved!'
+			);
+			$this->responses[] = $response;
+			return;
+		}
+
+		$controller = new $className(
+			ConnectedTraffic::getCM()->getClients(),
+			$request->getSender(),
+			$request->getHeader(),
+			$request->getBody()
+		);
+
+		if (!is_subclass_of($controller, 'RequestController')) {
+			$response = new Response(
+				$request->getSender(),
+				null,
+				-7,
+				'Request could be resolved!'
+			);
+			$this->responses[] = $response;
+			return;
+		}
+
+		if (!method_exists($controller, $methodName)) {
+			$response = new Response(
+				$request->getSender(),
+				null,
+				-5,
+				'Request could be resolved!'
+			);
+			$this->responses[] = $response;
+			return;
+		}
+		
+		$arguments = array();
+		$rm = new ReflectionMethod($className, $methodName);
+		
+		$params = $rm->getParameters();
+		foreach ($params as $i => $param) {
+			if (!$param->isOptional() && $request->getHeader()->getArgument($param->getName()) === null) {
+				$response = new Response(
+					$request->getSender(),
+					null,
+					-6,
+					'Invalid arguments provided!'
+				);
+				$this->responses[] = $response;
+				return false;
+			}
+			$arguments[] = $request->getHeader()->getArgument($param->getName());
+		}
+
+
+		call_user_func_array(array($controller, $methodName), $arguments);
+		$this->responses = array_merge($this->responses, $controller->getResponses());
 	}
+
 	public function getResponse(){
 		$response = null;
 		if(count($this->responses) >0){
@@ -56,4 +157,7 @@ class ConnectedTrafficApp {
 		}
 		return $response;
 	}
+
+
+
 }

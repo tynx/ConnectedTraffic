@@ -61,7 +61,7 @@ class ConnectionController {
 			);
 		}
 		$msg = $connection->read();
-		ConnectedTraffic::app()->onMessage($connection->getId(), $msg);
+		ConnectedTraffic::app()->processEvent('onReceived', $connection->getId(), $msg);
 		if ($msg === null) {
 			ConnectedTraffic::log(
 				'Got empty input. Closing connection.', 
@@ -69,7 +69,6 @@ class ConnectionController {
 				'warning'
 			);
 			$connection->close();
-			//$this->registerClose($connection->getId());
 			return;
 		}
 		$inFrame = new InboundFrame($connection->getId(), $msg);
@@ -112,7 +111,7 @@ class ConnectionController {
 			);
 			$outFrame->setIsHandshake();
 			$this->registerOutput($outFrame);
-			ConnectedTraffic::app()->onInitialized($connection->getId());
+			ConnectedTraffic::app()->processEvent('onInitialized', $connection->getId());
 			return;
 		}
 		$frameController = null;
@@ -140,11 +139,11 @@ class ConnectionController {
 	
 	private function _processOutboundFrame($outFrame){
 		ConnectedTraffic::log('sending to: ' . $outFrame->getReceiver(), 'ConnectedTraffic.ConnectionController');
+		ConnectedTraffic::app()->processEvent('onSent', $outFrame->getReceiver(), $outFrame->getData());
 		ConnectedTraffic::getCM()->getConnectionById($outFrame->getReceiver())->write($outFrame->getData());
 		if ($outFrame->getOpcode() === OutboundFrame::OPCODE_CLOSE) {
 			ConnectedTraffic::getCM()->getConnectionById($outFrame->getReceiver())->close();
-			ConnectedTraffic::app()->onClosed($outFrame->getReceiver());
-			//$this->controller->registerClose($outFrame->getReceiver());
+			ConnectedTraffic::app()->processEvent('onClosed', $connection->getId());
 		}
 	}
 
@@ -168,6 +167,6 @@ class ConnectionController {
 	public function registerOpen($socket) {
 		ConnectedTraffic::log('registering new connection.', 'ConnectedTraffic.Controller.ConnectionController');
 		ConnectedTraffic::getCM()->registerConnection($socket);
-		ConnectedTraffic::app()->onConnected(ConnectedTraffic::getCM()->getConnectionBySocket($socket));
+		ConnectedTraffic::app()->processEvent('onConnected', ConnectedTraffic::getCM()->getConnectionBySocket($socket));
 	}
 }

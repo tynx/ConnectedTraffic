@@ -75,4 +75,12 @@ class ConnectionManager {
 		}
 		return $connections;
 	}
+
+	public function getClients(){
+		$clients = array();
+		foreach($this->connections as $connection) {
+			$clients[] = new Client($connection->getId());
+		}
+		return $clients;
+	}
 }

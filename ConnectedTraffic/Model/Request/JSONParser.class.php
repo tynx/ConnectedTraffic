@@ -51,6 +51,20 @@ class JSONParser implements ParserInterface {
 			return false;
 		}
 
+		$parts = explode('/', $header['action']);
+		
+		if (count($parts) !== 2) {
+			$this->errorMessage = 'Did not receive valid Request. ' . 
+			'Action format is invalid.';
+			return false;
+		}
+
+		if (empty($parts[0]) || empty($parts[1])) {
+			$this->errorMessage = 'Did not receive valid Request. ' . 
+			'Action format is invalid.';
+			return false;
+		}
+
 		$this->header->setAction($header['action']);
 		
 		if (isset($header['time'])) {

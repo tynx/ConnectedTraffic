@@ -228,7 +228,7 @@
 
 	<!-- Check that the lenght of the line doesn't pass the max value -->
 	<test name="lineLength" level="info">
-		<property name="maxLineLength" value="80" />
+		<property name="maxLineLength" value="72" />
 		<property name="checkHTMLLines" value="false" />
 	</test>
 
