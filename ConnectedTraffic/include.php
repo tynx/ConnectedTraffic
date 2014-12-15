@@ -22,7 +22,7 @@ require_once('ConnectedTrafficServer.class.php');
 require_once('ConnectedTrafficApp.class.php');
 
 //Component
-//require_once('Component/Config.class.php');
+require_once('Component/Config.class.php');
 
 // Component (Logging)
 require_once('Component/Logging/Logger.class.php');

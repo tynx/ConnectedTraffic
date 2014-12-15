@@ -45,7 +45,7 @@ class ConnectionController {
 	
 
 	public function __construct() {
-		$this->config = ConnectedTraffic::getConfig('server');
+		$this->config = ConnectedTraffic::config()->getServerConfig();
 		//$this->requestController = new RequestController();
 	}
 

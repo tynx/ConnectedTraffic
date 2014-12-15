@@ -25,13 +25,20 @@ namespace ConnectedTraffic\Component\Logging;
  */
 class ConsoleLogRoute
 	extends \ConnectedTraffic\Component\Logging\LogRoute {
+	protected $neededConfigs = array('useColors');
+
+	protected $useColors = false;
 
 	/**
 	 * This method prints out a red line
 	 * @param (string)line the line to log
 	 */
 	public function logError($line) {
-		echo "\e[0;31m" . $line;
+		if ($this->useColors) {
+			echo "\e[0;31m" . $line;
+		} else {
+			echo $line;
+		}
 	}
 
 	/**
@@ -39,7 +46,11 @@ class ConsoleLogRoute
 	 * @param (string)line the line to log
 	 */
 	public function logWarning($line) {
-		echo "\e[1;31m" . $line;
+		if ($this->useColors) {
+			echo "\e[1;31m" . $line;
+		} else {
+			echo $line;
+		}
 	}
 
 	/**
@@ -47,7 +58,11 @@ class ConsoleLogRoute
 	 * @param (string)line the line to log
 	 */
 	public function logInfo($line) {
-		echo "\e[0;37m" . $line;
+		if ($this->useColors) {
+			echo "\e[0;37m" . $line;
+		} else {
+			echo $line;
+		}
 	}
 
 	/**
@@ -55,6 +70,10 @@ class ConsoleLogRoute
 	 * @param (string)line the line to log
 	 */
 	public function logDebug($line) {
-		echo "\e[0;33m" . $line;
+		if ($this->useColors) {
+			echo "\e[0;33m" . $line;
+		} else {
+			echo $line;
+		}
 	}
 }

@@ -67,7 +67,6 @@ class Handshake {
 			'Connection: Upgrade',
 			'Sec-WebSocket-Accept: ' . $accept,
 		);
-		var_dump($responseParts);
 		return implode("\r\n", $responseParts) . "\r\n\r\n";
 	}
 }

@@ -36,16 +36,16 @@ class ConnectedTrafficApp {
 	}
 	public function onMessage($connectionId, $data){
 		echo "APP: message event!\n";
-		echo "====\n" . $data . "\n====\n";
+		//echo "====\n" . $data . "\n====\n";
 	}
 	public function onClosed($connectionId){
 		echo "APP: closed event!\n";
 	}
-	public function processRequest($connectionId, $request){
+	public function processRequest($request){
 		echo "APP: processing request!\n";
 		echo "====\n";
 		//$request->getBody();
-		$this->responses[] = new Response($connectionId, "haba");
+		$this->responses[] = new Response($request->getSender(), "haba");
 		echo "\n====\n";
 	}
 	public function getResponse(){

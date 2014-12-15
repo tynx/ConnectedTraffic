@@ -33,6 +33,7 @@ use \ConnectedTraffic\ConnectedTrafficServer as ConnectedTrafficServer;
 use \ConnectedTraffic\ConnectedTrafficApp as ConnectedTrafficApp;
 use \ConnectedTraffic\Model\ConnectionManager as ConnectionManager;
 use \ConnectedTraffic\Component\Logging\Logger as Logger;
+use \ConnectedTraffic\Component\Config as Config;
 
 class ConnectedTraffic {
 	private static $config = null;
@@ -43,10 +44,8 @@ class ConnectedTraffic {
 
 	public static function init($config){
 		self::$connectionManager = new ConnectionManager();
-		self::$config = $config;
-		if (isset($config['components']['logging'])) {
-			self::$logger = new Logger($config['components']['logging']);
-		}
+		self::$config = new Config($config);
+		self::$logger = new Logger();
 		self::_createApp();
 		self::_createServer();
 	}
@@ -57,6 +56,10 @@ class ConnectedTraffic {
 
 	private static function _createServer() {
 		self::$server = new ConnectedTrafficServer();
+	}
+
+	public static function config(){
+		return self::$config;
 	}
 
 	public static function app(){
@@ -79,7 +82,7 @@ class ConnectedTraffic {
 		self::$logger->log($message, $category, $level);
 	}
 
-	public static function getConfig($category) {
+/*	public static function getConfig($category) {
 		return self::$config[$category];
 	}
 
@@ -89,6 +92,6 @@ class ConnectedTraffic {
 		}
 		return null;
 	}
-
+*/
 
 }

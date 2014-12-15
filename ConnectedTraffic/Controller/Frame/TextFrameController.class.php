@@ -31,9 +31,13 @@ class TextFrameController
 			'Got textframe => controller',
 			'ConnectedTraffic.Controller.Frame.TextFrameController'
 		);
-		$r = new Request($inFrame->getSender(), $inFrame->getPayload());
-		ConnectedTraffic::app()->processRequest($inFrame->getSender(), $r);
-		
+		$request = new Request(
+			$inFrame->getSender(),
+			$inFrame->getPayload()
+		);
+
+		ConnectedTraffic::app()->processRequest($request);
+	
 		$response = ConnectedTraffic::app()->getResponse();
 		while ($response !== null) {
 			$outFrame = new OutboundFrame($response->getReceiver(), $response->getRawData());

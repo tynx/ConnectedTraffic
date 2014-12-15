@@ -19,6 +19,7 @@
 
 namespace ConnectedTraffic\Component\Logging;
 
+use \ConnectedTraffic as ConnectedTraffic;
 use \ConnectedTraffic\Exception\InvalidConfigException
 	as InvalidConfigException;
 
@@ -35,7 +36,8 @@ class Logger {
 	private $logRoutes = array();
 
 
-	public function __construct($config) {
+	public function __construct() {
+		$config = ConnectedTraffic::config()->getComponentConfig('logging');
 		if (!is_array($config)) {
 			throw new InvalidConfigException(
 				'No valid config provided for Logging!'

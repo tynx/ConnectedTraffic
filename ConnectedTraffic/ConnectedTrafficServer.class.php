@@ -39,7 +39,7 @@ class ConnectedTrafficServer {
 	// constructor binds to the port/address
 	public function __construct() {
 		$this->connectionManager = new ConnectionManager();
-		$this->config = ConnectedTraffic::getConfig('server');
+		$this->config = ConnectedTraffic::config()->getServerConfig();
 		$this->controller = new ConnectionController();
 		$msg = 'Starting Server (PID: ' . posix_getpid() . ')';
 		ConnectedTraffic::log($msg, 'ConnectedTraffic.Server');
