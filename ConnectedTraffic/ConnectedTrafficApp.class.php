@@ -24,9 +24,10 @@ namespace ConnectedTraffic;
 use \ReflectionMethod as ReflectionMethod;
 use \ConnectedTraffic as ConnectedTraffic;
 use \ConnectedTraffic\Model\Response\Response as Response;
+use \ConnectedTraffic\Model\Client as Client;
 
 class ConnectedTrafficApp {
-	
+
 	private $allowedEvents = array(
 		'onConnected',
 		'onInitialized',
@@ -36,6 +37,7 @@ class ConnectedTrafficApp {
 	);
 	private $config = array();
 	private $responses = array();
+	private $clients = array();
 	
 
 	public function __construct(){
@@ -54,21 +56,46 @@ class ConnectedTrafficApp {
 	public function processEvent($eventType, $connectionId, $data = null){
 		if(!in_array($eventType, $this->allowedEvents))
 			return;
+		if($eventType === 'onConnected' || $eventType === 'onClosed'){
+			$this->_updateClientList();
+		}
 		foreach($this->config['eventControllers'] as $className){
 			$controller = new $className(
-				ConnectedTraffic::getCM()->getClients(),
+				$this->clients,
 				$connectionId
 			);
-			$arguments = array();
-			if($data !== null){
-				$arguments['data'] = $data;
+			$arguments = array('data'=>$data);
+			if($eventType === 'onReceived' || $eventType === 'onSent')
+				call_user_func_array(array($controller, $eventType), $arguments);
+			else
+				call_user_func(array($controller, $eventType));
+		}
+		
+		$this->responses = array_merge($this->responses, $controller->getResponses());
+	}
+
+	private function _updateClientList(){
+		foreach($this->clients as $i=>$client){
+			if(ConnectedTraffic::getCM()->getConnectionById($client->getConnectionId()) === null){
+				array_splice($this->clients, $i, 1);
+				$i--;
 			}
-			call_user_func_array(array($controller, $eventType), $arguments);
+		}
+		$connections = ConnectedTraffic::getCM()->getConnectedConnections();
+		foreach($connections as $connection){
+			$found = false;
+			foreach($this->clients as $i=>$client){
+				if($client->getConnectionId() === $connection->getId())
+					$found = true;
+			}
+			if(!$found)
+				$this->clients[] = new Client($connection->getId());
 		}
 	}
 
 	public function processRequest($request){
 		echo "APP: processing request!\n";
+		$this->_updateClientList();
 		if (!$request->isValid()) {
 			$response = new Response(
 				$request->getSender(),
@@ -98,7 +125,7 @@ class ConnectedTrafficApp {
 		}
 
 		$controller = new $className(
-			ConnectedTraffic::getCM()->getClients(),
+			$this->clients,
 			$request->getSender(),
 			$request->getHeader(),
 			$request->getBody()

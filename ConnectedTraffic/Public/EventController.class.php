@@ -42,7 +42,7 @@ abstract class EventController {
 	public abstract function onClosed();
 
 	protected final function addResponse($body, $connectionId = null, $status = 0, $statusMessage = 'OK') {
-		if($connectionId === null || $this->sender !== null)
+		if($connectionId === null && $this->sender !== null)
 			$connectionId = $this->sender->getConnectionId();
 		if($connectionId === null)
 			$connetionId = $this->senderId;

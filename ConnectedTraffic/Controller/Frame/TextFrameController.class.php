@@ -37,13 +37,5 @@ class TextFrameController
 		);
 
 		ConnectedTraffic::app()->processRequest($request);
-	
-		$response = ConnectedTraffic::app()->getResponse();
-		while ($response !== null) {
-			$outFrame = new OutboundFrame($response->getReceiver(), $response->getRawData());
-			$outFrame->setOpcode(OutboundFrame::OPCODE_TEXT);
-			$this->addOutboundFrame($outFrame);
-			$response = ConnectedTraffic::app()->getResponse();
-		}
 	}
 }

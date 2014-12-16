@@ -87,8 +87,10 @@ class Connection {
 	}
 
 	public function close() {
-		socket_shutdown($this->socket, 2);
-		socket_close($this->socket);
+		// no warning, because of bad client implementation in browsers
+		// like chrome.
+		@socket_shutdown($this->socket, 2);
+		@socket_close($this->socket);
 		$this->socket = null;
 		$this->connected = false;
 	}

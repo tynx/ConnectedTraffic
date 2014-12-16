@@ -68,7 +68,7 @@ class ConnectionController {
 				'ConnectedTraffic.Controller.ConnectionController',
 				'warning'
 			);
-			$connection->close();
+			$this->_handleClose($connection->getId());
 			return;
 		}
 		$inFrame = new InboundFrame($connection->getId(), $msg);
@@ -98,6 +98,13 @@ class ConnectionController {
 		$this->outboundFrames = array();
 		foreach ($outFrames as $outFrame) {
 			$this->_processOutboundFrame($outFrame);
+		}
+		$response = ConnectedTraffic::app()->getResponse();
+		while ($response !== null) {
+			$outFrame = new OutboundFrame($response->getReceiver(), $response->getRawData());
+			$outFrame->setOpcode(OutboundFrame::OPCODE_TEXT);
+			$this->_processOutboundFrame($outFrame);
+			$response = ConnectedTraffic::app()->getResponse();
 		}
 	}
 
@@ -142,8 +149,7 @@ class ConnectionController {
 		ConnectedTraffic::app()->processEvent('onSent', $outFrame->getReceiver(), $outFrame->getData());
 		ConnectedTraffic::getCM()->getConnectionById($outFrame->getReceiver())->write($outFrame->getData());
 		if ($outFrame->getOpcode() === OutboundFrame::OPCODE_CLOSE) {
-			ConnectedTraffic::getCM()->getConnectionById($outFrame->getReceiver())->close();
-			ConnectedTraffic::app()->processEvent('onClosed', $connection->getId());
+			$this->_handleClose($outFrame->getReceiver());
 		}
 	}
 
@@ -163,10 +169,16 @@ class ConnectionController {
 			}
 		}
 	}
+	
+	private function _handleClose($connectionId){
+		ConnectedTraffic::getCM()->getConnectionById($connectionId)->close();
+		ConnectedTraffic::app()->processEvent('onClosed', $connectionId);
+		ConnectedTraffic::getCM()->removeConnectionById($connectionId);
+	}
 
 	public function registerOpen($socket) {
 		ConnectedTraffic::log('registering new connection.', 'ConnectedTraffic.Controller.ConnectionController');
 		ConnectedTraffic::getCM()->registerConnection($socket);
-		ConnectedTraffic::app()->processEvent('onConnected', ConnectedTraffic::getCM()->getConnectionBySocket($socket));
+		ConnectedTraffic::app()->processEvent('onConnected', ConnectedTraffic::getCM()->getConnectionBySocket($socket)->getId());
 	}
 }

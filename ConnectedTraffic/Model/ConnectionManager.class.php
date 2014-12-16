@@ -76,11 +76,15 @@ class ConnectionManager {
 		return $connections;
 	}
 
-	public function getClients(){
-		$clients = array();
-		foreach($this->connections as $connection) {
-			$clients[] = new Client($connection->getId());
+	public function removeConnectionById($connectionId){
+		foreach ($this->connections as $i=>$connection) {
+			if ($connection->getId() === $connectionId) {
+				array_splice($this->connections, $i, 1);
+			}
 		}
-		return $clients;
+	}
+
+	public function getConnections(){
+		return $this->connections;
 	}
 }
