@@ -25,20 +25,50 @@ namespace ConnectedTraffic\Component\Logging;
  */
 class FileLogRoute
 	extends \ConnectedTraffic\Component\Logging\LogRoute {
+	protected $neededConfigs = array('file');
+
+	protected $file = null;
+	protected $fh = null;
+
+	public function __destruct(){
+		fclose($this->fh);
+	}
+
+	private function checkFile(){
+		if($this->fh !== null){
+			return true;
+		}
+		$this->fh = fopen(APP_ROOT . '/' . $this->file, 'a');
+		if($this->fh === null)
+			return false;
+		return true;
+	}
+
+	private function writeToFile($data){
+		if(!$this->checkFile())
+			return false;
+		for ($written = 0; $written < strlen($data); $written += $fwrite) {
+			$fwrite = fwrite($this->fh, substr($data, $written));
+			if ($fwrite === false) {
+				return $written;
+			}
+		}
+		return $written;
+	}
 
 	public function logError($line) {
-		echo 'to_file' . $line;
+		$this->writeToFile($line);
 	}
 	
 	public function logWarning($line) {
-		echo 'to_file' . $line;
+		$this->writeToFile($line);
 	}
 	
 	public function logInfo($line) {
-		echo 'to_file' . $line;
+		$this->writeToFile($line);
 	}
 	
 	public function logDebug($line) {
-		echo 'to_file' . $line;
+		$this->writeToFile($line);
 	}
 }

@@ -69,9 +69,8 @@ class ConnectedTrafficApp {
 				call_user_func_array(array($controller, $eventType), $arguments);
 			else
 				call_user_func(array($controller, $eventType));
+			$this->responses = array_merge($this->responses, $controller->getResponses());
 		}
-		
-		$this->responses = array_merge($this->responses, $controller->getResponses());
 	}
 
 	private function _updateClientList(){
