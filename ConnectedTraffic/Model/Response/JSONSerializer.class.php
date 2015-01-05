@@ -31,6 +31,8 @@ class JSONSerializer implements SerializerInterface {
 		$assocHeader = array();
 		$objHeader = $this->response->getHeader();
 		$assocHeader['id'] = $objHeader->getId();
+		$assocHeader['tag'] = $objHeader->getTag();
+		$assocHeader['contentType'] = $objHeader->getContentType();
 		$assocHeader['status'] = $objHeader->getStatus();
 		$assocHeader['statusMessage'] = $objHeader->getStatusMessage();
 		$assocHeader['server'] = $objHeader->getServer();

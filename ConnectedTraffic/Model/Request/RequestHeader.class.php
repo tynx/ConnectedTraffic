@@ -22,10 +22,18 @@ namespace ConnectedTraffic\Model\Request;
 class RequestHeader {
 	private $time = 0;
 	private $length = 0;
+	private $tag = null;
+	private $contentType = null;
 	private $action = null;
 	private $arguments = array();
 	
-	public function __construct($time = 0, $length = 0, $action = null) {
+	public function __construct(
+		$time = 0,
+		$length = 0,
+		$action = null,
+		$contentType = 'text',
+		$tag = null
+		) {
 		if ($time !== 0) {
 			$this->time = $time;
 		}
@@ -35,6 +43,13 @@ class RequestHeader {
 		if ($action !== null) {
 			$this->action = $action;
 		}
+		if($contentType !== 'text'){
+			$this->contentType = $contentType;
+		}
+		if($tag !== null){
+			$this->tag = $tag;
+		}
+		
 	}
 
 	public function getTime() {
@@ -59,6 +74,22 @@ class RequestHeader {
 
 	public function setAction($action) {
 		$this->action = $action;
+	}
+
+	public function getTag() {
+		return $this->tag;
+	}
+
+	public function setTag($tag) {
+		$this->tag = $tag;
+	}
+
+	public function getContentType() {
+		return $this->contentType;
+	}
+
+	public function setContentType($contentType) {
+		$this->contentType = $contentType;
 	}
 
 	public function getArgument($key) {

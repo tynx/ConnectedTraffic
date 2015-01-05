@@ -27,6 +27,8 @@ class Response {
 	
 	public function __construct(
 		$receiver,
+		$tag = null,
+		$contentType = 'text',
 		$body = null,
 		$status = 0,
 		$statusMessage = 'OK'
@@ -35,6 +37,8 @@ class Response {
 		$id = sha1(uniqid() . time());
 		$this->header = new ResponseHeader(
 			$id,
+			$tag,
+			$contentType,
 			strlen($body),
 			$status,
 			$statusMessage

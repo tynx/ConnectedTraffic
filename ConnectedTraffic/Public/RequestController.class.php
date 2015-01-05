@@ -36,10 +36,13 @@ abstract class RequestController {
 		$this->request = $request;
 	}
 
-	protected final function addResponse($body, $connectionId = null, $status = 0, $statusMessage = 'OK') {
+	protected final function addResponse($body, $connectionId = null, $contentType = 'text', $status = 0, $statusMessage = 'OK', $tag = null) {
 		if($connectionId === null)
 			$connectionId = $this->sender->getConnectionId();
-		$this->responses[] = new Response($connectionId, $body, $status, $statusMessage);
+		if($tag === null){
+			$tag = $this->request->getTag();
+		}
+		$this->responses[] = new Response($connectionId, $tag, $contentType, $body, $status, $statusMessage);
 	}
 
 	protected final function findClientsByValue($key, $value) {

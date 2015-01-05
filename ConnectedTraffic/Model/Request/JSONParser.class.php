@@ -75,6 +75,14 @@ class JSONParser implements ParserInterface {
 			$this->header->setLength($header['length']);
 		}
 
+		if (isset($header['tag'])) {
+			$this->header->setTag($header['tag']);
+		}
+
+		if (isset($header['contentType'])) {
+			$this->header->setLength($header['contentType']);
+		}
+
 		if (isset($header['arguments']) &&
 			is_array($header['arguments'])) {
 			foreach ($header['arguments'] as $argument => $value) {

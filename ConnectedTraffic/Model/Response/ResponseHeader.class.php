@@ -23,6 +23,8 @@ use \ConnectedTraffic\Component\Config as Config;
 
 class ResponseHeader {
 	private $id = null;
+	private $tag = null;
+	private $contentType = 'text';
 	private $status = 0;
 	private $statusMessage = null;
 	private $server = null;
@@ -31,11 +33,15 @@ class ResponseHeader {
 
 	public function __construct(
 		$id,
+		$tag,
+		$contentType,
 		$length,
 		$status,
 		$statusMessage
 	) {
 		$this->id = $id;
+		$this->tag = $tag;
+		$this->contentType = $contentType;
 		$this->status = $status;
 		$this->statusMessage = $statusMessage;
 		// javascript parseable time
@@ -47,6 +53,14 @@ class ResponseHeader {
 
 	public function getId() {
 		return $this->id;
+	}
+
+	public function getTag() {
+		return $this->tag;
+	}
+
+	public function getContentType() {
+		return $this->contentType;
 	}
 
 	public function getStatus() {

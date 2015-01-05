@@ -93,11 +93,12 @@ class ConnectedTrafficApp {
 	}
 
 	public function processRequest($request){
-		echo "APP: processing request!\n";
 		$this->_updateClientList();
 		if (!$request->isValid()) {
 			$response = new Response(
 				$request->getSender(),
+				null,
+				null,
 				null,
 				-1,
 				$request->getErrorMessage()
@@ -115,6 +116,8 @@ class ConnectedTrafficApp {
 			!class_exists($className)) {
 			$response = new Response(
 				$request->getSender(),
+				null,
+				null,
 				null,
 				-4,
 				'Request could be resolved!'
@@ -134,6 +137,8 @@ class ConnectedTrafficApp {
 			$response = new Response(
 				$request->getSender(),
 				null,
+				null,
+				null,
 				-7,
 				'Request could be resolved!'
 			);
@@ -144,6 +149,8 @@ class ConnectedTrafficApp {
 		if (!method_exists($controller, $methodName)) {
 			$response = new Response(
 				$request->getSender(),
+				null,
+				null,
 				null,
 				-5,
 				'Request could be resolved!'
@@ -161,6 +168,8 @@ class ConnectedTrafficApp {
 				$response = new Response(
 					$request->getSender(),
 					null,
+					null,
+					null,
 					-6,
 					'Invalid arguments provided!'
 				);
@@ -169,7 +178,6 @@ class ConnectedTrafficApp {
 			}
 			$arguments[] = $request->getHeader()->getArgument($param->getName());
 		}
-
 
 		call_user_func_array(array($controller, $methodName), $arguments);
 		$this->responses = array_merge($this->responses, $controller->getResponses());
