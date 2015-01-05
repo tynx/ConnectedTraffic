@@ -31,7 +31,7 @@ class Request {
 		$this->id = sha1(uniqid() . time());
 		$this->sender = $sender;
 		//conf-based
-		$parser = new JSONParser($rawData);
+		$parser = new PlainTextParser($rawData);
 		if ($parser->parse()) {
 			$this->header = $parser->getHeader();
 			$this->body = $parser->getBody();

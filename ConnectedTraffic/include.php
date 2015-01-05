@@ -54,12 +54,14 @@ require_once('Model/Request/Request.class.php');
 require_once('Model/Request/RequestHeader.class.php');
 require_once('Model/Request/ParserInterface.php');
 require_once('Model/Request/JSONParser.class.php');
+require_once('Model/Request/PlainTextParser.class.php');
 
 // Model (Response)
 require_once('Model/Response/Response.class.php');
 require_once('Model/Response/ResponseHeader.class.php');
 require_once('Model/Response/SerializerInterface.php');
 require_once('Model/Response/JSONSerializer.class.php');
+require_once('Model/Response/PlainTextSerializer.class.php');
 
 // Helper
 require_once('Helper/Handshake.class.php');

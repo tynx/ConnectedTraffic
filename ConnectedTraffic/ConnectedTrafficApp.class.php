@@ -97,7 +97,7 @@ class ConnectedTrafficApp {
 		if (!$request->isValid()) {
 			$response = new Response(
 				$request->getSender(),
-				null,
+				'system-error',
 				null,
 				null,
 				-1,
@@ -116,7 +116,7 @@ class ConnectedTrafficApp {
 			!class_exists($className)) {
 			$response = new Response(
 				$request->getSender(),
-				null,
+				'system-error',
 				null,
 				null,
 				-4,
@@ -136,7 +136,7 @@ class ConnectedTrafficApp {
 		if (!is_subclass_of($controller, 'RequestController')) {
 			$response = new Response(
 				$request->getSender(),
-				null,
+				'system-error',
 				null,
 				null,
 				-7,
@@ -149,7 +149,7 @@ class ConnectedTrafficApp {
 		if (!method_exists($controller, $methodName)) {
 			$response = new Response(
 				$request->getSender(),
-				null,
+				'system-error',
 				null,
 				null,
 				-5,
@@ -167,7 +167,7 @@ class ConnectedTrafficApp {
 			if (!$param->isOptional() && $request->getHeader()->getArgument($param->getName()) === null) {
 				$response = new Response(
 					$request->getSender(),
-					null,
+					'system-error',
 					null,
 					null,
 					-6,

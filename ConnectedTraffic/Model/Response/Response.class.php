@@ -45,7 +45,7 @@ class Response {
 		);
 		$this->body = $body;
 		//conf based
-		$this->serializer = new JSONSerializer($this);
+		$this->serializer = new PlainTextSerializer($this);
 		$this->serializer->serialize();
 	}
 	
