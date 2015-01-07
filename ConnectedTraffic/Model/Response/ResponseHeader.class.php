@@ -41,7 +41,7 @@ class ResponseHeader {
 	) {
 		$this->id = $id;
 		$this->tag = $tag;
-		$this->contentType = $contentType;
+		$this->contentType = strtolower($contentType);
 		$this->status = $status;
 		$this->statusMessage = $statusMessage;
 		// javascript parseable time

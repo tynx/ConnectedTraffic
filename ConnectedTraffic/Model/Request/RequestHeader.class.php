@@ -43,8 +43,8 @@ class RequestHeader {
 		if ($action !== null) {
 			$this->action = $action;
 		}
-		if($contentType !== 'text'){
-			$this->contentType = $contentType;
+		if(strtolower($contentType) !== 'text'){
+			$this->contentType = strtolower($contentType);
 		}
 		if($tag !== null){
 			$this->tag = $tag;
@@ -89,7 +89,7 @@ class RequestHeader {
 	}
 
 	public function setContentType($contentType) {
-		$this->contentType = $contentType;
+		$this->contentType = strtolower($contentType);
 	}
 
 	public function getArgument($key) {

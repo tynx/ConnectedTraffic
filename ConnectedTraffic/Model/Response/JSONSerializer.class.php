@@ -40,9 +40,6 @@ class JSONSerializer implements SerializerInterface {
 		$assocHeader['length'] = $objHeader->getLength();
 		
 		$body = $this->response->getBody();
-		$search = array('"', '\/');
-		$replace = array('\"', '/');
-		$body = str_replace($search, $replace, $body);
 		$this->rawData = '{"header":' . json_encode($assocHeader) . 
 			', "body":"' . $body . '"}';
 	}

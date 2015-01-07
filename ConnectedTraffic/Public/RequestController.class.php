@@ -23,24 +23,25 @@ abstract class RequestController {
 	private $responses = array();
 	protected $clients = array();
 	protected $sender = null;
-	protected $request = null;
+	protected $header = null;
 	protected $body = null;
 
-	public final function __construct($clients, $sender, $request) {
+	public final function __construct($clients, $sender, $header, $body) {
 		$this->clients = $clients;
 		foreach ($clients as $client) {
 			if ($client->getConnectionId() === $sender) {
 				$this->sender = $client;
 			}
 		}
-		$this->request = $request;
+		$this->header = $header;
+		$this->body = $body;
 	}
 
 	protected final function addResponse($body, $connectionId = null, $contentType = 'text', $status = 0, $statusMessage = 'OK', $tag = null) {
 		if($connectionId === null)
 			$connectionId = $this->sender->getConnectionId();
 		if($tag === null){
-			$tag = $this->request->getTag();
+			$tag = $this->header->getTag();
 		}
 		$this->responses[] = new Response($connectionId, $tag, $contentType, $body, $status, $statusMessage);
 	}

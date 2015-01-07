@@ -80,7 +80,7 @@ class JSONParser implements ParserInterface {
 		}
 
 		if (isset($header['contentType'])) {
-			$this->header->setLength($header['contentType']);
+			$this->header->setContentType($header['contentType']);
 		}
 
 		if (isset($header['arguments']) &&

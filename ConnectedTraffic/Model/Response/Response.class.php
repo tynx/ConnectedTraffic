@@ -18,10 +18,13 @@
  */
 
 namespace ConnectedTraffic\Model\Response;
+use \ConnectedTraffic as ConnectedTraffic;
+use \ConnectedTraffic\Exception\InvalidConfigException as InvalidConfigException;
 
 class Response {
 	private $receiver = null;
 	private $header = null;
+	private $rawBody = null;
 	private $body = null;
 	private $serializer = null;
 	
@@ -43,9 +46,21 @@ class Response {
 			$status,
 			$statusMessage
 		);
-		$this->body = $body;
-		//conf based
-		$this->serializer = new PlainTextSerializer($this);
+		$this->rawBody = $body;
+		if($this->header->getContentType() === 'text'){
+			$this->body = $this->rawBody;
+		}elseif($this->header->getContentType() === 'json'){
+			$search = array('"', '\/');
+			$replace = array('\"', '/');
+			$this->body = str_replace($search, $replace, $this->rawBody);
+		}
+		$type = ConnectedTraffic::config()->getServerConfig('protocolFormat');
+		$className = '\\ConnectedTraffic\\Model\\Response\\' . $type . 'Serializer';
+		if(class_exists($className, false)){
+			$this->serializer = new $className($this);
+		}else{
+			throw new InvalidConfigException('Not implemented parser: ' . $className);
+		}
 		$this->serializer->serialize();
 	}
 	

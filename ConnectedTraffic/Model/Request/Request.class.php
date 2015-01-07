@@ -18,11 +18,14 @@
  */
 
 namespace ConnectedTraffic\Model\Request;
+use \ConnectedTraffic as ConnectedTraffic;
+use \ConnectedTraffic\Exception\InvalidConfigException as InvalidConfigException;
 
 class Request {
 	protected $id = null;
 	protected $sender = null;
 	protected $header = null;
+	protected $rawBody = null;
 	protected $body = null;
 	protected $valid = true;
 	protected $errorMessage = null;
@@ -30,11 +33,22 @@ class Request {
 	public function __construct($sender, $rawData) {
 		$this->id = sha1(uniqid() . time());
 		$this->sender = $sender;
-		//conf-based
-		$parser = new PlainTextParser($rawData);
+		$type = ConnectedTraffic::config()->getServerConfig('protocolFormat');
+		$className = '\\ConnectedTraffic\\Model\\Request\\' . $type . 'Parser';
+		if(class_exists($className, false)){
+			$parser = new $className($rawData);
+		}else{
+			throw new InvalidConfigException('Not implemented parser: ' . $className);
+		}
+		
 		if ($parser->parse()) {
 			$this->header = $parser->getHeader();
-			$this->body = $parser->getBody();
+			$this->rawBody = $parser->getBody();
+			if($this->header->getContentType() === 'text'){
+				$this->body = $this->rawBody;
+			} elseif($this->header->getContentType() === 'json'){
+				$this->body = json_decode($this->rawBody, true);
+			}
 		} else {
 			$this->errorMessage = $parser->getErrorMessage();
 			$this->valid = false;
@@ -48,6 +62,13 @@ class Request {
 	public function getHeader() {
 		if ($this->isValid()) {
 			return $this->header;
+		}
+		return null;
+	}
+
+	public function getRawBody() {
+		if ($this->isValid()) {
+			return $this->rawBody;
 		}
 		return null;
 	}
