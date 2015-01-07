@@ -65,53 +65,51 @@ abstract class Frame {
 	}
 
 	protected function parse($rawData) {
-		$bits = decbin(ord($rawData[0])) . decbin(ord($rawData[1]));
-
-		$this->header['fin'] = ($bits[0] === '1') ? true : false;
-		$this->header['rsv1'] = ($bits[1] === '1') ? true : false;
-		$this->header['rsv2'] = ($bits[2] === '1') ? true : false;
-		$this->header['rsv3'] = ($bits[3] === '1') ? true : false;
-		$this->header['opcode'] = bindec(substr($bits, 4, 4));
-		$this->header['masked'] = ($bits[8] === '1') ? true : false;
-		$this->header['length'] = bindec(substr($bits, 9));
-
-		$rawData = substr($rawData, 2);
-
-		if ($this->header['length'] === 127) {
-			$this->header['length'] = bindec(
-				decbin(
-					ord($rawData[0])) . decbin(ord($rawData[1])
-				) .
-				decbin(
-					ord($rawData[2])) . decbin(ord($rawData[3])
-				) .
-				decbin(
-					ord($rawData[4])) . decbin(ord($rawData[5])
-				) .
-				decbin(
-					ord($rawData[6])) . decbin(ord($rawData[7])
-				)
-			);
-			$rawData = substr($rawData, 8);
-		}
-
-		if ($this->header['length'] === 126) {
-			$this->header['length'] = bindec(
-				decbin(
-					ord($rawData[0])) . decbin(ord($rawData[1])
-				)
-			);
-			$rawData = substr($rawData, 2);
-		}
-
 		
-		if ($this->header['masked'] === true) {
-			$masking = new Masking(substr($rawData, 0, 4));
-			$rawData = substr($rawData, 4);
-			if(strlen ($rawData) > 0)
-				$rawData = $masking->unmaskBytes($rawData);
+		if(strpos($rawData, 'GET / HTTP/1.1') === 0){
+			// No need to parse! It's the handshake. Probably. But NOT
+			// a frame.
+			$this->setIsHandshake();
+			$this->payload = $rawData;
+			return;
 		}
-		$this->payload = $rawData;
+		
+		$rawBytes = unpack('C*', $rawData);
+		$this->header['fin'] = ($rawBytes[1] & (1<<7)) ? true : false;
+		$this->header['rsv1'] = ($rawBytes[1] & (1<<6)) ? true : false;
+		$this->header['rsv2'] = ($rawBytes[1] & (1<<5)) ? true : false;
+		$this->header['rsv3'] = ($rawBytes[1] & (1<<4)) ? true : false;
+		$this->header['opcode'] = $rawBytes[1] & 0xF;
+		$this->header['masked'] = ($rawBytes[2] & (1<<7)) ? true : false;
+		$this->header['length'] = (float)($rawBytes[2] & 0x7F);
+
+		if ($this->header['length'] === (float)127) {
+			// we do not supported frames with more payload with  >65536
+			// length!
+		}
+		if ($this->header['length'] === (float)126) {
+			$this->header['length'] = $rawBytes[3] << 8 | $rawBytes[4];
+		}
+
+		if($this->header['masked'] === true){
+			$masking = null;
+			$payloadPosition = 0;
+			if($this->header['length'] > 125){
+				$masking = new Masking(array_slice($rawBytes, 4, 4));
+				$payloadPosition = 8;
+			}elseif($this->header['length'] > 0){
+				$masking = new Masking(array_slice($rawBytes, 2, 4));
+				$payloadPosition = 6;
+			}
+			$this->payload = $masking->unmaskBytes(array_slice($rawBytes, $payloadPosition));
+		}else{
+			if($this->header['length'] > 125){
+				$this->payload = substr($rawData, 4);
+			}elseif($this->header['length'] > 0){
+				$this->payload = substr($rawData, 2);
+			}
+			
+		}
 	}
 
 	protected function encapsulate() {

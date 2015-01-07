@@ -38,7 +38,7 @@ class Masking {
 	/**
 	 * The 4 bytes itself
 	 */
-	private $keys = "\0\0\0\0";
+	private $keyBytes = array(0,0,0,0);
 
 	/**
 	 * We need the masking-keys to mask/demask a frame. It is always
@@ -46,7 +46,7 @@ class Masking {
 	 * @params (array)keys the keys which should be used to demask
 	 */
 	public function __construct($keys) {
-		if (!is_string($keys) || strlen ($keys) !== self::KEY_LENGTH) {
+		if (!is_array($keys) || count($keys) !== self::KEY_LENGTH) {
 			throw new InvalidParameterException(
 				'Invalid masking-key provided.'
 			);
@@ -61,15 +61,14 @@ class Masking {
 	 * @return (String) the unsmasked bytes
 	 */
 	public function unmaskBytes($masked) {
-		if (!is_string($masked)) {
+		if (!is_array($masked)) {
 			throw new InvalidParameterException(
-				'Invalid type in maskedBytes. String expected.'
+				'Invalid type in maskedBytes. byte-array expected.'
 			);
 		}
 		$unmasked = '';
-		for ($i = 0; $i < strlen($masked); $i++) {
-			$key = $this->keys[($i % self::KEY_LENGTH)];
-			$xor = ord($masked[$i]) ^ ord($key);
+		for ($i = 0; $i < count($masked); $i++) {
+			$xor = $masked[$i] ^ $this->keys[($i % self::KEY_LENGTH)];
 			$unmasked .= urldecode('%' . dechex($xor));
 		}
 		return $unmasked;

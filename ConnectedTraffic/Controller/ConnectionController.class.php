@@ -110,7 +110,7 @@ class ConnectionController {
 
 	private function _processInboundFrame($inFrame) {
 		$connection = ConnectedTraffic::getCM()->getConnectionById($inFrame->getSender());
-		if (!$connection->hasHandshaked()) {
+		if (!$connection->hasHandshaked() && $inFrame->isHandshake()) {
 			$connection->setHasHandshaked();
 			$outFrame = new OutboundFrame(
 				$inFrame->getSender(),
