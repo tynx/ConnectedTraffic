@@ -35,7 +35,7 @@ class ConsoleLogRoute
 	 */
 	public function logError($line) {
 		if ($this->useColors) {
-			echo "\e[0;31m" . $line;
+			echo "\e[0;31m" . $line . "\e[0m";
 		} else {
 			echo $line;
 		}
@@ -47,7 +47,7 @@ class ConsoleLogRoute
 	 */
 	public function logWarning($line) {
 		if ($this->useColors) {
-			echo "\e[1;31m" . $line;
+			echo "\e[1;31m" . $line . "\e[0m";
 		} else {
 			echo $line;
 		}
@@ -59,7 +59,7 @@ class ConsoleLogRoute
 	 */
 	public function logInfo($line) {
 		if ($this->useColors) {
-			echo "\e[0;37m" . $line;
+			echo "\e[0;37m" . $line . "\e[0m";
 		} else {
 			echo $line;
 		}
@@ -71,7 +71,7 @@ class ConsoleLogRoute
 	 */
 	public function logDebug($line) {
 		if ($this->useColors) {
-			echo "\e[0;33m" . $line;
+			echo "\e[0;33m" . $line . "\e[0m";
 		} else {
 			echo $line;
 		}
