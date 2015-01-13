@@ -101,7 +101,9 @@ abstract class Frame {
 				$masking = new Masking(array_slice($rawBytes, 2, 4));
 				$payloadPosition = 6;
 			}
-			$this->payload = $masking->unmaskBytes(array_slice($rawBytes, $payloadPosition));
+			if($masking !== null){
+				$this->payload = $masking->unmaskBytes(array_slice($rawBytes, $payloadPosition));
+			}
 		}else{
 			if($this->header['length'] > 125){
 				$this->payload = substr($rawData, 4);
@@ -113,29 +115,25 @@ abstract class Frame {
 	}
 
 	protected function encapsulate() {
-		$rawData = '';
-		$bits = (($this->header['fin'] === true) ? '1' : '0') . '000';
-
-		$bits .= str_pad(
-			decbin($this->getOpcode()),
-			4,
-			'0',
-			STR_PAD_LEFT
-		) . '0';
-		$lengthBits = decbin(strlen($this->payload));
-
-		if (strlen($this->payload) >= 65535) {
-			$bits .= '1111111' .
-				str_pad($lengthBits, 64, '0', STR_PAD_LEFT);
-		} elseif (strlen($this->payload) >= 126) {
-			$bits .= '1111110' .
-				str_pad($lengthBits, 16, '0', STR_PAD_LEFT);
-		} else {
-			$bits .= str_pad($lengthBits, 7, '0', STR_PAD_LEFT);
+		$header = 0;
+		$header = ($this->header['fin']) ? $header | (1<<15) : $header;
+		$header = ($this->header['rsv1']) ? $header | (1<<14) : $header;
+		$header = ($this->header['rsv2']) ? $header | (1<<13) : $header;
+		$header = ($this->header['rsv3']) ? $header | (1<<12) : $header;
+		$header = $header | ($this->header['opcode'] << 8);
+		$header = ($this->header['masked']) ? $header | (1<<7) : $header;
+		
+		
+		if(strlen($this->payload) >= 65535){
+			$header = ($header | 127) << 64;
+		} elseif (strlen($this->payload) >= 126){
+			$header = ($header | 126) << 16;
 		}
-
-		for ($i = 0; $i < (strlen($bits) / 8); $i++) {
-			$rawData .= chr(bindec(substr($bits, $i * 8, 8)));
+		$header = $header | strlen($this->payload);
+		$rawData = '';
+		$bytes = unpack("C*", pack("L", $header));
+		foreach($bytes as $byte){
+			$rawData = chr($byte) . $rawData;
 		}
 
 		for ($i = 0; $i < strlen($this->payload); $i++) {
