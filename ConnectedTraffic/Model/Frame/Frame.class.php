@@ -115,27 +115,38 @@ abstract class Frame {
 	}
 
 	protected function encapsulate() {
-		$header = 0;
-		$header = ($this->header['fin']) ? $header | (1<<15) : $header;
-		$header = ($this->header['rsv1']) ? $header | (1<<14) : $header;
-		$header = ($this->header['rsv2']) ? $header | (1<<13) : $header;
-		$header = ($this->header['rsv3']) ? $header | (1<<12) : $header;
-		$header = $header | ($this->header['opcode'] << 8);
-		$header = ($this->header['masked']) ? $header | (1<<7) : $header;
-		
-		
-		if(strlen($this->payload) >= 65535){
-			$header = ($header | 127) << 64;
-		} elseif (strlen($this->payload) >= 126){
-			$header = ($header | 126) << 16;
-		}
-		$header = $header | strlen($this->payload);
 		$rawData = '';
-		$bytes = unpack("C*", pack("L", $header));
-		foreach($bytes as $byte){
-			$rawData = chr($byte) . $rawData;
+		$extendedLength = false;
+		$byte1 = 0;
+		$byte2 = 0;
+		$byte1 = ($this->header['fin']) ? $byte1 | (1<<7) : $byte1;
+		$byte1 = ($this->header['rsv1']) ? $byte1 | (1<<6) : $byte1;
+		$byte1 = ($this->header['rsv2']) ? $byte1 | (1<<5) : $byte1;
+		$byte1 = ($this->header['rsv3']) ? $byte1 | (1<<4) : $byte1;
+		$byte1 = $byte1 | ($this->header['opcode'] & 0xF);
+		$byte2 = ($this->header['masked']) ? $byte2 | (1<<7) : $byte2;
+		if(strlen($this->payload) >= 65535){
+			$byte2 = ($byte2 | 127); //<< 64;
+			$extendedLength = true;
+		} elseif (strlen($this->payload) >= 126){
+			$byte2 = ($byte2 | 126); // << 16;
+			$extendedLength = true;
+		} else {
+			$byte2 = $byte2 | (strlen($this->payload) & 0x7F);
 		}
-
+		$rawData = chr($byte1 & 0xFF) . chr($byte2 & 0xFF);
+		if($extendedLength){
+			$bytes = array();
+			if(strlen($this->payload) >= 65535){
+				$bytes = unpack("C*", pack("Q", strlen($this->payload)));
+			} elseif (strlen($this->payload) >= 126){
+				$bytes = unpack("C*", pack("S", strlen($this->payload)));
+			}
+			foreach(array_reverse($bytes) as $byte){
+				$rawData .= chr($byte);
+			}
+		}
+		
 		for ($i = 0; $i < strlen($this->payload); $i++) {
 			$rawData .= utf8_decode($this->payload[$i]);
 		}

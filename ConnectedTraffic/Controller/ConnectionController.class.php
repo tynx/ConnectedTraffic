@@ -81,7 +81,7 @@ class ConnectionController {
 		$this->_processOutput();
 	}
 
-	public function registerOutput($outFrame){
+	public function registerOutput(OutboundFrame $outFrame){
 		$this->outboundFrames[] = $outFrame;
 	}
 
@@ -108,7 +108,7 @@ class ConnectionController {
 		}
 	}
 
-	private function _processInboundFrame($inFrame) {
+	private function _processInboundFrame(InboundFrame $inFrame) {
 		$connection = ConnectedTraffic::getCM()->getConnectionById($inFrame->getSender());
 		if (!$connection->hasHandshaked() && $inFrame->isHandshake()) {
 			$connection->setHasHandshaked();
@@ -144,7 +144,7 @@ class ConnectionController {
 		}
 	}
 	
-	private function _processOutboundFrame($outFrame){
+	private function _processOutboundFrame(OutboundFrame $outFrame){
 		ConnectedTraffic::log('sending to: ' . $outFrame->getReceiver(), 'ConnectedTraffic.ConnectionController');
 		ConnectedTraffic::app()->processEvent('onSent', $outFrame->getReceiver(), $outFrame->getData());
 		ConnectedTraffic::getCM()->getConnectionById($outFrame->getReceiver())->write($outFrame->getData());

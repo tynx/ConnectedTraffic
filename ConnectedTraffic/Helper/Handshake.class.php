@@ -20,6 +20,7 @@
 // READ(!!): http://tools.ietf.org/html/rfc6455#section-5.5.3
 
 namespace ConnectedTraffic\Helper;
+use \ConnectedTraffic\Model\Request\Request as Request;
 
 /**
  * This class provides a single method which autogenerates the according
@@ -40,10 +41,10 @@ class Handshake {
 	 * @return (string) empty string (on fail) or the according upgrade
 	 * as string
 	 */
-	public static function generateResponse($request) {
+	public static function generateResponse($rawRequest) {
 
 		$header = array();
-		$headerLines = explode("\r\n", $request);
+		$headerLines = explode("\r\n", $rawRequest);
 		foreach ($headerLines as $headerLine) {
 			$headerParts = explode(': ', $headerLine);
 			if (count($headerParts) !== 2) {

@@ -82,7 +82,7 @@ class Logger {
 		$this->logRoutes[] = $route;
 	}
 
-	public function log($message, $category, $level) {
+	public function log( $message, $category, $level) {
 		foreach ($this->logRoutes as $route) {
 			$route->log($message, $category, $level);
 		}

@@ -20,13 +20,14 @@
 namespace ConnectedTraffic\Controller\Frame;
 
 use \ConnectedTraffic as ConnectedTraffic;
+use \ConnectedTraffic\Model\Frame\InboundFrame as InboundFrame;
 use \ConnectedTraffic\Model\Frame\OutboundFrame as OutboundFrame;
 use \ConnectedTraffic\Model\Request\Request as Request;
 
 class TextFrameController 
 	extends \ConnectedTraffic\Controller\Frame\FrameController {
 
-	public function processInboundFrame($inFrame){
+	public function processInboundFrame(InboundFrame $inFrame){
 		ConnectedTraffic::log(
 			'Got textframe => controller',
 			'ConnectedTraffic.Controller.Frame.TextFrameController'

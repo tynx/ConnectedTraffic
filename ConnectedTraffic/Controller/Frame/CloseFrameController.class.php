@@ -20,12 +20,13 @@
 namespace ConnectedTraffic\Controller\Frame;
 
 use \ConnectedTraffic as ConnectedTraffic;
+use \ConnectedTraffic\Model\Frame\InboundFrame as InboundFrame;
 use \ConnectedTraffic\Model\Frame\OutboundFrame as OutboundFrame;
 
 class CloseFrameController 
 	extends \ConnectedTraffic\Controller\Frame\FrameController {
 
-	public function processInboundFrame($inFrame){
+	public function processInboundFrame(InboundFrame $inFrame){
 		ConnectedTraffic::log(
 			'Responding to close-frame.',
 			'ConnectedTraffic.Controller.Frame.CloseFrameController'

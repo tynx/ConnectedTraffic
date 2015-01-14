@@ -20,14 +20,16 @@
 namespace ConnectedTraffic\Controller\Frame;
 
 use \ConnectedTraffic as ConnectedTraffic;
+use \ConnectedTraffic\Model\Frame\InboundFrame as InboundFrame;
+use \ConnectedTraffic\Model\Frame\OutboundFrame as OutboundFrame;
 
 abstract class FrameController {
 	
 	private $outboundFrames = array();
 	
-	public abstract function processInboundFrame($inFrame);
+	public abstract function processInboundFrame(InboundFrame $inFrame);
 
-	protected final function addOutboundFrame($outFrame){
+	protected final function addOutboundFrame(OutboundFrame $outFrame){
 		$this->outboundFrames[] = $outFrame;
 	}
 

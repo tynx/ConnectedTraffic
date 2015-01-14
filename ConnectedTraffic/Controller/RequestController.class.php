@@ -90,7 +90,7 @@ class RequestController {
 		}
 	}
 
-	private function processRequest($request) {
+	private function processRequest(Request $request) {
 		if (!$request->isValid()) {
 			$response = new Response(
 				$request->getSender(),
@@ -221,7 +221,7 @@ class RequestController {
 		}
 	}
 
-	private function registerResponse($response) {
+	private function registerResponse(Response $response) {
 		$this->responses[] = $response;
 	}
 

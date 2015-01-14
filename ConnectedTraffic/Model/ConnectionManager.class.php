@@ -24,7 +24,7 @@ class ConnectionManager {
 
 	public function __construct() { }
 
-	public function addConnection($connection){
+	public function addConnection(Connection $connection){
 		$this->connections[] = $connection;
 	}
 

@@ -20,12 +20,13 @@
 namespace ConnectedTraffic\Controller\Frame;
 
 use \ConnectedTraffic as ConnectedTraffic;
+use \ConnectedTraffic\Model\Frame\InboundFrame as InboundFrame;
 use \ConnectedTraffic\Model\Frame\OutboundFrame as OutboundFrame;
 
 class BinaryFrameController
 	extends \ConnectedTraffic\Controller\Frame\FrameController {
 
-	public function processInboundFrame($inFrame){
+	public function processInboundFrame(InboundFrame $inFrame){
 		ConnectedTraffic::log(
 			'Ignoring binary Frame.',
 			'ConnectedTraffic.Controller.Frame.BinaryFrameController'
