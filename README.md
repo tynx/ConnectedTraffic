@@ -14,16 +14,16 @@ As the deadline of the project hasn't reached yet, there is a lot left to do. Bu
 So what exactly is left to do?
 
 ### Framework
-- uniform Class modifiers
-- Work with datatypes to prevent errors inside the Framework
-- The protocol on top of the websockets is currently in JSON, lets try it in PlainText!
+- Feature: Build the Notifier-Concept (Server-Side events, eg via INOTIFY or Time-based (maybe redis-support?!))
+- Protocol: Make it possible to remove unused header-fields.
+- Protocol: Keeping performance in mind: make it possible to work without field-names to reduce data-usage
+- Code: Frame-Classes need refactoring
+- Bug: Large messages support (>65k chars)
+- Bug: Binary-message support (File-sending/receiving)
 - Exception: work with more and actively.
-- FileLogRoute: Logging to files
-- Large messages support (>65k chars)
-- Binary-message support (I currently don't see an actual use for that)
 - Documentation of every file/class/method
 
-### For developers
-- Javascript Library needs a lot of improvement
+### For developers/users
+- Javascript Client/Library needs a lot of improvement
 - examples, so everyone can get it running within seconds
 - Documentation: Tutorials, HowTos, Protocol, FAQs, etc.
