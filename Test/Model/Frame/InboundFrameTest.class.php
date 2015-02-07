@@ -23,6 +23,7 @@ namespace ConnectedTrafficTest\Model\Frame;
      +---------------------------------------------------------------+
  */
 
+use \ConnectedTraffic\Model\Frame\Frame as Frame;
 use \ConnectedTraffic\Model\Frame\InboundFrame as InboundFrame;
 use \PHPUnit_Framework_TestCase as PHPUnit_Framework_TestCase;
 
@@ -89,7 +90,67 @@ class InboundFrameTest extends PHPUnit_Framework_TestCase{
 		$this->assertEquals(true, $inOff->isValid());
 	}
 
-	// TEST INVALID KEY!
+	public function testOPCode(){
+		$opcode0 = chr(bindec('10000000')) . chr(bindec('00000001')) . 'a';
+		$opcode1 = chr(bindec('10000001')) . chr(bindec('00000001')) . 'a';
+		$opcode2 = chr(bindec('10000010')) . chr(bindec('00000001')) . 'a';
+		$opcode3 = chr(bindec('10000011')) . chr(bindec('00000001')) . 'a';
+		$opcode4 = chr(bindec('10000100')) . chr(bindec('00000001')) . 'a';
+		$opcode5 = chr(bindec('10000101')) . chr(bindec('00000001')) . 'a';
+		$opcode6 = chr(bindec('10000110')) . chr(bindec('00000001')) . 'a';
+		$opcode7 = chr(bindec('10000111')) . chr(bindec('00000001')) . 'a';
+		$opcode8 = chr(bindec('10001000')) . chr(bindec('00000001')) . 'a';
+		$opcode9 = chr(bindec('10001001')) . chr(bindec('00000001')) . 'a';
+		$opcode10 = chr(bindec('10001010')) . chr(bindec('00000001')) . 'a';
+		$opcode11 = chr(bindec('10001011')) . chr(bindec('00000001')) . 'a';
+		$opcode12 = chr(bindec('10001100')) . chr(bindec('00000001')) . 'a';
+		$opcode13 = chr(bindec('10001101')) . chr(bindec('00000001')) . 'a';
+		$opcode14 = chr(bindec('10001110')) . chr(bindec('00000001')) . 'a';
+		$opcode15 = chr(bindec('10001111')) . chr(bindec('00000001')) . 'a';
+		$in0 = new InboundFrame('somesender', $opcode0);
+		$in1 = new InboundFrame('somesender', $opcode1);
+		$in2 = new InboundFrame('somesender', $opcode2);
+		$in3 = new InboundFrame('somesender', $opcode3);
+		$in4 = new InboundFrame('somesender', $opcode4);
+		$in5 = new InboundFrame('somesender', $opcode5);
+		$in6 = new InboundFrame('somesender', $opcode6);
+		$in7 = new InboundFrame('somesender', $opcode7);
+		$in8 = new InboundFrame('somesender', $opcode8);
+		$in9 = new InboundFrame('somesender', $opcode9);
+		$in10 = new InboundFrame('somesender', $opcode10);
+		$in11 = new InboundFrame('somesender', $opcode11);
+		$in12 = new InboundFrame('somesender', $opcode12);
+		$in13 = new InboundFrame('somesender', $opcode13);
+		$in14 = new InboundFrame('somesender', $opcode14);
+		$in15 = new InboundFrame('somesender', $opcode15);
+
+		// Test valid OPCodes
+		$this->assertEquals(Frame::OPCODE_CONTINUATION, $in0->getOpcode());
+		$this->assertEquals(true, $in0->isValid());
+		$this->assertEquals(Frame::OPCODE_TEXT, $in1->getOpcode());
+		$this->assertEquals(true, $in1->isValid());
+		$this->assertEquals(Frame::OPCODE_BINARY, $in2->getOpcode());
+		$this->assertEquals(true, $in2->isValid());
+		$this->assertEquals(Frame::OPCODE_CLOSE, $in8->getOpcode());
+		$this->assertEquals(true, $in8->isValid());
+		$this->assertEquals(Frame::OPCODE_PING, $in9->getOpcode());
+		$this->assertEquals(true, $in9->isValid());
+		$this->assertEquals(Frame::OPCODE_PONG, $in10->getOpcode());
+		$this->assertEquals(true, $in10->isValid());
+
+		// Test invalid OPCodes
+		$this->assertEquals(false, $in3->isValid());
+		$this->assertEquals(false, $in4->isValid());
+		$this->assertEquals(false, $in5->isValid());
+		$this->assertEquals(false, $in6->isValid());
+		$this->assertEquals(false, $in7->isValid());
+		$this->assertEquals(false, $in11->isValid());
+		$this->assertEquals(false, $in12->isValid());
+		$this->assertEquals(false, $in13->isValid());
+		$this->assertEquals(false, $in14->isValid());
+		$this->assertEquals(false, $in15->isValid());
+	}
+
 	public function testMasking(){
 		$key = chr(45) . chr(189) . chr(98) . chr(211);
 		$message = 'Hello World!'; // 12 chars => 0001100
@@ -97,16 +158,58 @@ class InboundFrameTest extends PHPUnit_Framework_TestCase{
 		$maskedMessage = chr(101) . chr(216) . chr(14) . chr(191) . chr(66) . chr(157) . chr(53) . chr(188) . chr(95) . chr(209) . chr(6) . chr(242);
 		$masking = chr(bindec('10000001')) . chr(bindec('10001100')) . $key . $maskedMessage;
 		$raw = chr(bindec('10000001')) . chr(bindec('00001100')) . $message;
+		// needs to have short message to detect
+		$invalidKey = chr(bindec('10000001')) . chr(bindec('10000001')) . 'a';
 		$inMasking = new InboundFrame('somesender', $masking);
 		$inRaw = new InboundFrame('somesender', $raw);
+		$inInvalid = new InboundFrame('somesender', $invalidKey);
 
 		// Test if messages are ok
 		$this->assertEquals($message, $inRaw->getPayload());
 		$this->assertEquals($message, $inMasking->getPayload());
+		// No failure but empty string expected
+		$this->assertEquals('', $inInvalid->getPayload());
 
 		// Test validator
 		$this->assertEquals(true, $inRaw->isValid());
 		$this->assertEquals(true, $inMasking->isValid());
+		$this->assertEquals(false, $inInvalid->isValid());
+	}
+
+	public function testInvalidLength(){
+		// always one off: see generatePayload(x(+/-)1);
+		$raw1 = chr(bindec('10000001')) . chr(bindec('00000001')) . $this->generatePayload(2);
+		$raw10 = chr(bindec('10000001')) . chr(bindec('00001010')) . $this->generatePayload(9);
+		$raw100 = chr(bindec('10000001')) . chr(bindec('01100100')) . $this->generatePayload(101);
+		$raw1000 = chr(bindec('10000001')) . chr(bindec('01111110')) . chr(bindec('00000011')) . chr(bindec('11101000')) . $this->generatePayload(999);
+		$raw10000 = chr(bindec('10000001')) . chr(bindec('01111110')) . chr(bindec('00100111')) . chr(bindec('00010000')) . $this->generatePayload(10001);
+
+		$in1 = new InboundFrame('somesender', $raw1);
+		$in10 = new InboundFrame('somesender', $raw10);
+		$in100 = new InboundFrame('somesender', $raw100);
+		$in1000 = new InboundFrame('somesender', $raw1000);
+		$in10000 = new InboundFrame('somesender', $raw10000);
+
+		// Header length should still be "ok"
+		$this->assertEquals(1, $in1->getLength());
+		$this->assertEquals(10, $in10->getLength());
+		$this->assertEquals(100, $in100->getLength());
+		$this->assertEquals(1000, $in1000->getLength());
+		$this->assertEquals(10000, $in10000->getLength());
+
+		// Payload length shoudl still be "ok"
+		$this->assertEquals(2, strlen($in1->getPayload()));
+		$this->assertEquals(9, strlen($in10->getPayload()));
+		$this->assertEquals(101, strlen($in100->getPayload()));
+		$this->assertEquals(999, strlen($in1000->getPayload()));
+		$this->assertEquals(10001, strlen($in10000->getPayload()));
+
+		// BUT: Validation should fail!
+		$this->assertEquals(false, $in1->isValid());
+		$this->assertEquals(false, $in10->isValid());
+		$this->assertEquals(false, $in100->isValid());
+		$this->assertEquals(false, $in1000->isValid());
+		$this->assertEquals(false, $in10000->isValid());
 	}
 
 	public function testLength(){

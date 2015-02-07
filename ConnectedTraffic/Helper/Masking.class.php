@@ -47,9 +47,7 @@ class Masking {
 	 */
 	public function __construct($keys) {
 		if (!is_array($keys) || count($keys) !== self::KEY_LENGTH) {
-			throw new InvalidParameterException(
-				'Invalid masking-key provided.'
-			);
+			return;
 		}
 		$this->keys = $keys;
 	}
@@ -62,9 +60,7 @@ class Masking {
 	 */
 	public function unmaskBytes($masked) {
 		if (!is_array($masked)) {
-			throw new InvalidParameterException(
-				'Invalid type in maskedBytes. byte-array expected.'
-			);
+			return '';
 		}
 		$unmasked = '';
 		for ($i = 0; $i < count($masked); $i++) {

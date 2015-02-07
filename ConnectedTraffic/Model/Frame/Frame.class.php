@@ -95,10 +95,22 @@ abstract class Frame {
 
 	private function validate(){
 		$this->valid = true;
-		if($this->isRSV1() || $this->isRSV2() || $this->isRSV3() ){
+		// Reserved flags are not to be used!
+		if($this->isRSV1() === true
+			|| $this->isRSV2() === true
+			|| $this->isRSV3() === true ){
 			$this->valid = false;
 		}
-		// length, obcode
+		if(strlen($this->payload) !== $this->header['length']){
+			$this->valid = false;
+		}
+		// Reserved OPCodes are not to be used!
+		if($this->header['opcode'] >= 3 && $this->header['opcode'] <= 7){
+			$this->valid = false;
+		}
+		if($this->header['opcode'] >= 11){
+			$this->valid = false;
+		}
 	}
 
 	protected function parse($rawData) {
