@@ -183,6 +183,17 @@ class InboundFrameTest extends PHPUnit_Framework_TestCase{
 		// Test validator
 		$this->assertEquals(true, $in1->isValid());
 		$this->assertEquals(true, $in10->isValid());
+		$this->assertEquals(true, $in100->isValid());
+		$this->assertEquals(true, $in125->isValid());
+		$this->assertEquals(true, $in126->isValid());
+		$this->assertEquals(true, $in127->isValid());
+		$this->assertEquals(true, $in128->isValid());
+		$this->assertEquals(true, $in1000->isValid());
+		$this->assertEquals(true, $in10000->isValid());
+		$this->assertEquals(true, $in65534->isValid());
+		$this->assertEquals(true, $in65535->isValid());
+		$this->assertEquals(true, $in65536->isValid());
+		$this->assertEquals(true, $in100000->isValid());
 	}
 }
 
