@@ -1,0 +1,7 @@
+<phpunit bootstrap="../ConnectedTraffic/include.php">
+  <testsuites>
+    <testsuite name="frame">
+      <directory>Model/Frame</directory>
+    </testsuite>
+  </testsuites>
+</phpunit>

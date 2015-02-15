@@ -103,6 +103,7 @@ class ConnectionController {
 		while ($response !== null) {
 			$outFrame = new OutboundFrame($response->getReceiver(), $response->getRawData());
 			$outFrame->setOpcode(OutboundFrame::OPCODE_TEXT);
+			$outFrame->setIsFin(true);
 			$this->_processOutboundFrame($outFrame);
 			$response = ConnectedTraffic::app()->getResponse();
 		}

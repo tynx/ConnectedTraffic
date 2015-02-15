@@ -31,6 +31,16 @@ class OutboundFrame extends \ConnectedTraffic\Model\Frame\Frame {
 		return $this->receiver;
 	}
 
+	public function setOpcode($opcode) {
+		$this->header['opcode'] = $opcode;
+	}
+
+	public function setIsFin($fin){
+		if(is_bool($fin)){
+			$this->header['fin'] = $fin;
+		}
+	}
+
 	public function getData() {
 		if ($this->isHandshake()) {
 			return $this->payload;

@@ -33,6 +33,7 @@ class PingFrameController
 		);
 		$outFrame = new OutboundFrame($inFrame->getSender());
 		$outFrame->setOpcode(OutboundFrame::OPCODE_PONG);
+		$outFrame->setIsFin(true);
 		$this->addOutboundFrame($outFrame);
 	}
 }

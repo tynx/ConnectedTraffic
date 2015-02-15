@@ -33,6 +33,7 @@ class CloseFrameController
 		);
 		$outFrame = new OutboundFrame($inFrame->getSender());
 		$outFrame->setOpcode(OutboundFrame::OPCODE_CLOSE);
+		$outFrame->setFin(true);
 		$this->addOutboundFrame($outFrame);
 	}
 }

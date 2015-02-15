@@ -32,7 +32,7 @@ abstract class Frame {
 	const OPCODE_PONG = 10;
 
 	protected $header = array(
-		'fin'    => true,
+		'fin'    => false,
 		'rsv1'   => false,
 		'rsv2'   => false,
 		'rsv3'   => false,
@@ -55,10 +55,6 @@ abstract class Frame {
 
 	public function isHandshake() {
 		return $this->isHandshake;
-	}
-
-	public function setOpcode($opcode) {
-		$this->header['opcode'] = $opcode;
 	}
 
 	public function isFin(){
